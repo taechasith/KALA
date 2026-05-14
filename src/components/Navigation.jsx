@@ -18,26 +18,45 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 60)
-      const mid = window.innerHeight / 2
-      let closest = "hero"
-      let closestDist = Infinity
-      NAV_ITEMS.forEach(({ id }) => {
-        const el = document.getElementById(id)
-        if (!el) return
-        const rect = el.getBoundingClientRect()
-        const dist = Math.abs(rect.top + rect.height / 2 - mid)
-        if (dist < closestDist) { closestDist = dist; closest = id }
-      })
-      setActive(closest)
-    }
+    const onScroll = () => setScrolled(window.scrollY > 60)
+    const sections = NAV_ITEMS
+      .map(({ id }) => document.getElementById(id))
+      .filter(Boolean)
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+
+        if (visible[0]?.target?.id) setActive(visible[0].target.id)
+      },
+      {
+        rootMargin: "-20% 0px -45% 0px",
+        threshold: [0.2, 0.35, 0.5, 0.7],
+      }
+    )
+
+    sections.forEach((section) => observer.observe(section))
+
     window.addEventListener("scroll", onScroll, { passive: true })
     onScroll()
-    return () => window.removeEventListener("scroll", onScroll)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("scroll", onScroll)
+    }
   }, [])
 
-  const scrollTo = id => { document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setOpen(false) }
+  const scrollTo = (id) => {
+    const el = document.getElementById(id)
+    if (!el) return
+
+    const top = window.scrollY + el.getBoundingClientRect().top - 16
+    window.scrollTo({ top, behavior: "smooth" })
+    setActive(id)
+    setOpen(false)
+  }
 
   return (
     <>
