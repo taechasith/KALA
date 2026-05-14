@@ -199,7 +199,7 @@ export default function StatsPanel() {
             REDACTED
           </span>
           <p className="font-mono text-[0.65rem]" style={{ color:"rgba(79,137,147,0.6)" }}>
-            {STATS.redacted} documents contain partial or full redactions. KALA decoder uses Claude AI to reconstruct context from surrounding text and cross-references.
+            {STATS.redacted} documents contain partial or full redactions. KALA decoder uses KALA AI to reconstruct context from surrounding text and cross-references.
           </p>
         </motion.div>
       </div>

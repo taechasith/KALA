@@ -318,7 +318,7 @@ export default function AIDecoder() {
         payload.fileType = "metadata"
       }
 
-      setLoadingMsg("Analyzing with Claude AI...")
+      setLoadingMsg("Analyzing with KALA AI...")
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -361,10 +361,10 @@ export default function AIDecoder() {
     <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"rgba(6,17,22,0.72)" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} className="mb-8 text-center">
-          <p className="font-mono text-[0.6rem] tracking-[0.3em] mb-2" style={{ color:"rgba(79,137,147,0.7)" }}>CLAUDE AI — DOCUMENT INTELLIGENCE</p>
+          <p className="font-mono text-[0.6rem] tracking-[0.3em] mb-2" style={{ color:"rgba(79,137,147,0.7)" }}>KALA AI — DOCUMENT INTELLIGENCE</p>
           <h2 className="font-poster text-5xl md:text-6xl tracking-wide" style={{ color:"#E9F3F1" }}>AI Decoder</h2>
           <p className="font-mono text-xs mt-2 max-w-md mx-auto" style={{ color:"rgba(79,137,147,0.5)" }}>
-            PDF · TXT · Images · Video — Claude decodes, sees, and analyzes
+            PDF · TXT · Images · Video — KALA AI decodes, sees, and analyzes
           </p>
           <div className="w-16 h-px mx-auto mt-4" style={{ background: SIGNAL+"60" }} />
         </motion.div>
@@ -508,7 +508,7 @@ export default function AIDecoder() {
                   <div className="text-5xl mb-4 opacity-15">⌬</div>
                   <p className="font-mono text-xs mb-2" style={{ color:"rgba(79,137,147,0.5)" }}>Awaiting input</p>
                   <p className="font-mono text-[0.6rem] leading-relaxed max-w-xs" style={{ color:"rgba(79,137,147,0.3)" }}>
-                    PDF, text, images, and video frames all decoded with Claude vision AI
+                    PDF, text, images, and video frames all decoded with KALA AI vision
                   </p>
                 </motion.div>
               )}
