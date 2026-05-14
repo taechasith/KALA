@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Navigation from "./components/Navigation"
 import GlobalSpaceship from "./components/GlobalSpaceship"
+import ImmersiveStars from "./components/ImmersiveStars"
 import HeroSection from "./components/HeroSection"
 import StatsPanel from "./components/StatsPanel"
 import ErrorBoundary from "./components/ErrorBoundary"
@@ -32,6 +33,7 @@ function EntryLoader() {
     >
       <div className="absolute inset-0 kala-loader-grid" />
       <div className="absolute inset-0 kala-loader-stars" />
+      <ImmersiveStars density={1200} intensity={1.2} speed={6.5} />
       <div className="absolute inset-x-4 top-5 flex items-center justify-between font-mono text-[0.55rem] tracking-[0.22em]" style={{ color: "rgba(79,137,147,0.68)" }}>
         <span>BOOT NODE 01</span>
         <span>CLASSIFIED ACCESS</span>
