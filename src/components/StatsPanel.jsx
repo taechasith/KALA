@@ -63,7 +63,7 @@ export default function StatsPanel() {
   ]
 
   return (
-    <section id="stats" className="min-h-screen py-16 md:py-24 px-4 snap-section" style={{ background:"#061116" }}>
+    <section className="min-h-screen py-16 md:py-24 px-4 snap-section" style={{ background:"#061116" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div

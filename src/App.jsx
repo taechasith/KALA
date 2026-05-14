@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Navigation from "./components/Navigation"
+import GlobalSpaceship from "./components/GlobalSpaceship"
 import HeroSection from "./components/HeroSection"
 import StatsPanel from "./components/StatsPanel"
 import ErrorBoundary from "./components/ErrorBoundary"
@@ -27,10 +28,14 @@ function EntryLoader() {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      className="fixed inset-0 z-[100] overflow-hidden"
-      style={{ background: "radial-gradient(circle at 50% 30%, rgba(79,137,147,0.18), #061116 55%)" }}
+      className="fixed inset-0 z-[100] overflow-hidden kala-entry"
     >
       <div className="absolute inset-0 kala-loader-grid" />
+      <div className="absolute inset-0 kala-loader-stars" />
+      <div className="absolute inset-x-4 top-5 flex items-center justify-between font-mono text-[0.55rem] tracking-[0.22em]" style={{ color: "rgba(79,137,147,0.68)" }}>
+        <span>BOOT NODE 01</span>
+        <span>CLASSIFIED ACCESS</span>
+      </div>
       <motion.div
         animate={{ opacity: [0.18, 0.4, 0.18] }}
         transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
@@ -39,7 +44,8 @@ function EntryLoader() {
       />
 
       <div className="relative h-full flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
+        <div className="relative text-center max-w-md px-8 py-10 kala-loader-panel">
+          <div className="absolute inset-0 kala-loader-reticle" />
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -47,7 +53,7 @@ function EntryLoader() {
             className="mb-6"
           >
             <p className="font-mono text-[0.55rem] tracking-[0.45em] mb-3" style={{ color: "rgba(79,137,147,0.75)" }}>
-              PURSUE SYSTEM
+              PURSUE SYSTEM / SIGNAL LOCK
             </p>
             <h1 className="font-poster text-[clamp(4rem,14vw,8rem)] leading-none tracking-[0.12em] glow-signal" style={{ color: "#F4B51F" }}>
               KALA
@@ -73,6 +79,11 @@ function EntryLoader() {
           >
             SYNCHRONIZING ARCHIVE · MAP · DECODER
           </motion.p>
+          <div className="mt-6 grid grid-cols-3 gap-2 font-mono text-[0.5rem] tracking-[0.16em]" style={{ color: "rgba(233,243,241,0.55)" }}>
+            <span className="kala-loader-chip">DOW</span>
+            <span className="kala-loader-chip">NASA</span>
+            <span className="kala-loader-chip">USAF</span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -102,18 +113,19 @@ export default function App() {
         />
       </div>
 
+      <GlobalSpaceship />
       <Navigation />
 
       <main>
-        <div id="hero">
+        <div id="hero" className="nav-target snap-section">
           <ErrorBoundary><HeroSection /></ErrorBoundary>
         </div>
 
-        <div id="stats">
+        <div id="stats" className="nav-target snap-section">
           <ErrorBoundary><StatsPanel /></ErrorBoundary>
         </div>
 
-        <div id="globe">
+        <div id="globe" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Loading geospatial data..." />}>
               <GlobeView />
@@ -121,7 +133,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        <div id="network">
+        <div id="network" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Computing document network..." />}>
               <NetworkGraph />
@@ -129,7 +141,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        <div id="correlation">
+        <div id="correlation" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Analyzing correlations..." />}>
               <DataCorrelation />
@@ -137,7 +149,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        <div id="vault">
+        <div id="vault" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Opening vault..." />}>
               <DocumentVault />
@@ -145,7 +157,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        <div id="video">
+        <div id="video" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Loading footage archive..." />}>
               <VideoArchive />
@@ -153,7 +165,7 @@ export default function App() {
           </ErrorBoundary>
         </div>
 
-        <div id="decoder">
+        <div id="decoder" className="nav-target snap-section">
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Initializing AI decoder..." />}>
               <AIDecoder />

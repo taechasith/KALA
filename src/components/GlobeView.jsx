@@ -75,7 +75,7 @@ export default function GlobeView() {
   }
 
   return (
-    <section id="globe" className="min-h-screen py-16 px-4 snap-section" style={{ background: "#061116" }}>
+    <section className="min-h-screen py-16 px-4 snap-section" style={{ background: "#061116" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -125,6 +125,10 @@ body::before {
 
 /* Section snap */
 .snap-section { scroll-snap-align: start; }
+.nav-target { scroll-margin-top: 76px; }
+@media (min-width: 768px) {
+  .nav-target { scroll-margin-top: 16px; }
+}
 
 /* Agency colors — CI-mapped */
 .agency-DOW   { color: #4F8993; border-color: #4F8993; }
@@ -149,6 +153,63 @@ body::before {
 .glow-signal { text-shadow: 0 0 30px rgba(244,181,31,0.5); }
 .glow-teal   { text-shadow: 0 0 20px rgba(79,137,147,0.5); }
 .glow-rec    { text-shadow: 0 0 20px rgba(255,30,30,0.6); }
+
+/* KALA boot loader */
+.kala-entry {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(244,181,31,0.1), transparent 22%),
+    radial-gradient(circle at 50% 50%, rgba(79,137,147,0.18), transparent 46%),
+    linear-gradient(180deg, #020617 0%, #061116 58%, #020617 100%);
+}
+
+.kala-loader-grid {
+  background-image:
+    linear-gradient(rgba(79,137,147,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,137,147,0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 50% 50%, black 0%, transparent 74%);
+}
+
+.kala-loader-stars {
+  background-image:
+    radial-gradient(circle, rgba(233,243,241,0.38) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(244,181,31,0.28) 0 1px, transparent 1.5px);
+  background-position: 12px 18px, 80px 56px;
+  background-size: 150px 150px, 220px 220px;
+  opacity: 0.22;
+}
+
+.kala-loader-panel {
+  border: 1px solid rgba(79,137,147,0.18);
+  background: rgba(6,17,22,0.2);
+  box-shadow: inset 0 0 42px rgba(79,137,147,0.08), 0 0 80px rgba(0,0,0,0.38);
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
+}
+
+.kala-loader-reticle {
+  pointer-events: none;
+  background:
+    radial-gradient(circle, transparent 0 34%, rgba(79,137,147,0.22) 35% 35.5%, transparent 36%),
+    radial-gradient(circle, transparent 0 48%, rgba(244,181,31,0.18) 49% 49.4%, transparent 50%),
+    linear-gradient(90deg, transparent 49.8%, rgba(79,137,147,0.18) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 49.8%, rgba(79,137,147,0.18) 50%, transparent 50.2%);
+  opacity: 0.75;
+}
+
+.kala-loader-chip {
+  border: 1px solid rgba(79,137,147,0.18);
+  padding: 0.35rem 0.5rem;
+  background: rgba(79,137,147,0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kala-loader-stars,
+  .scanline::after,
+  .rec-dot,
+  .cursor {
+    animation: none;
+  }
+}
 
 /* Leaflet dark theme overrides */
 .leaflet-popup-content-wrapper,

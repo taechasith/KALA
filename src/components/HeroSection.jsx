@@ -1,129 +1,6 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
-import { Clone, useAnimations, useGLTF } from "@react-three/drei"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import * as THREE from "three"
 import { STATS } from "../data/manifest"
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max)
-}
-
-function StarField({ count = 1600 }) {
-  const ref = useRef()
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3)
-    const colors = new Float32Array(count * 3)
-
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 220
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 140
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 220
-
-      const color = new THREE.Color().setHSL(0.56 + Math.random() * 0.08, 0.24 + Math.random() * 0.25, 0.55 + Math.random() * 0.25)
-      colors[i * 3] = color.r
-      colors[i * 3 + 1] = color.g
-      colors[i * 3 + 2] = color.b
-    }
-
-    return { pos, colors }
-  }, [count])
-
-  useFrame((state) => {
-    if (!ref.current) return
-    ref.current.rotation.y = state.clock.elapsedTime * 0.005
-    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.08) * 0.04
-  })
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" array={positions.pos} itemSize={3} count={count} />
-        <bufferAttribute attach="attributes-color" array={positions.colors} itemSize={3} count={count} />
-      </bufferGeometry>
-      <pointsMaterial vertexColors size={0.33} sizeAttenuation transparent opacity={0.78} />
-    </points>
-  )
-}
-
-function SpaceshipScene({ scrollProgress, reducedMotion }) {
-  const shipRef = useRef()
-  const root = useRef()
-  const { scene, animations } = useGLTF("/spaceship.gltf")
-  const shipScene = useMemo(() => scene.clone(), [scene])
-  const { actions } = useAnimations(animations, root)
-
-  useEffect(() => {
-    if (!actions) return
-
-    Object.values(actions).forEach((action) => {
-      if (!action) return
-      if (reducedMotion) {
-        action.stop()
-      } else {
-        action.reset().fadeIn(0.6).play()
-      }
-    })
-
-    return () => {
-      Object.values(actions).forEach((action) => action?.stop())
-    }
-  }, [actions, reducedMotion])
-
-  useFrame((state, delta) => {
-    if (!shipRef.current) return
-
-    const progress = clamp(scrollProgress, 0, 1)
-    const sweep = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.55)
-    const glide = reducedMotion ? 0 : Math.cos(state.clock.elapsedTime * 0.42)
-    const targetX = THREE.MathUtils.lerp(12.5, -7.2, progress)
-    const targetY = THREE.MathUtils.lerp(4.5, -1.8, progress)
-    const targetZ = THREE.MathUtils.lerp(-10.5, 0.8, progress)
-    const bob = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.45) * 0.42
-    const sway = reducedMotion ? 0 : Math.cos(state.clock.elapsedTime * 0.9) * 0.95
-    const driftZ = reducedMotion ? 0 : glide * 0.85
-
-    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, targetX + sway, 0.055)
-    shipRef.current.position.y = THREE.MathUtils.lerp(shipRef.current.position.y, targetY + bob, 0.055)
-    shipRef.current.position.z = THREE.MathUtils.lerp(shipRef.current.position.z, targetZ + driftZ, 0.055)
-
-    const rotationY = THREE.MathUtils.lerp(1.18, -0.48, progress) + sweep * 0.08
-    const rotationZ = THREE.MathUtils.lerp(-0.34, 0.18, progress) + (reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.1) * 0.085)
-    shipRef.current.rotation.y = THREE.MathUtils.lerp(shipRef.current.rotation.y, rotationY, 0.05)
-    shipRef.current.rotation.z = THREE.MathUtils.lerp(shipRef.current.rotation.z, rotationZ, 0.05)
-
-    if (!reducedMotion) {
-      const rotationX = 0.12 + Math.sin(state.clock.elapsedTime * 1.35) * 0.12
-      shipRef.current.rotation.x = THREE.MathUtils.lerp(shipRef.current.rotation.x, rotationX, 0.05)
-      shipRef.current.rotation.y += delta * 0.03
-    }
-  })
-
-  return (
-    <group ref={root}>
-      <ambientLight intensity={0.55} color="#17323a" />
-      <directionalLight position={[10, 8, 6]} intensity={1.45} color="#d8f6ff" />
-      <pointLight position={[0, 2, 7]} intensity={1.2} color="#4F8993" />
-      <pointLight position={[-4, -2, 4]} intensity={1.05} color="#F4B51F" />
-
-      <StarField count={reducedMotion ? 900 : 1600} />
-
-      <group ref={shipRef} position={[12.5, 4.5, -10.5]} rotation={[0.16, 1.18, -0.34]} scale={reducedMotion ? 1.14 : 1.42}>
-        <Clone object={shipScene} />
-      </group>
-
-      <mesh position={[-4.5, -0.6, -8.5]} rotation={[0.4, 0.5, 0]}>
-        <torusGeometry args={[1.9, 0.035, 12, 80]} />
-        <meshBasicMaterial color="#4F8993" transparent opacity={0.18} />
-      </mesh>
-
-      <mesh position={[-4.5, -0.6, -8.5]} rotation={[0.4, 0.5, 0]}>
-        <torusGeometry args={[2.5, 0.022, 12, 80]} />
-        <meshBasicMaterial color="#F4B51F" transparent opacity={0.12} />
-      </mesh>
-    </group>
-  )
-}
 
 function TypeWriter({ text, onDone }) {
   const [displayed, setDisplayed] = useState("")
@@ -197,7 +74,6 @@ function Mountains() {
 export default function HeroSection() {
   const [phase, setPhase] = useState(0)
   const [showStats, setShowStats] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [reducedMotion, setReducedMotion] = useState(false)
 
   useEffect(() => {
@@ -215,42 +91,14 @@ export default function HeroSection() {
     return () => [t1, t2, t3].forEach(clearTimeout)
   }, [])
 
-  useEffect(() => {
-    const updateScroll = () => {
-      const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.95, 1), 0, 1)
-      setScrollProgress(progress)
-    }
-
-    updateScroll()
-    window.addEventListener("scroll", updateScroll, { passive: true })
-    window.addEventListener("resize", updateScroll)
-    return () => {
-      window.removeEventListener("scroll", updateScroll)
-      window.removeEventListener("resize", updateScroll)
-    }
-  }, [])
-
   const scrollToVault = () => document.getElementById("vault")?.scrollIntoView({ behavior: "smooth" })
   const scrollToDecoder = () => document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
 
   return (
     <section
-      id="hero"
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden snap-section scanline"
       style={{ background: "#061116" }}
     >
-      <div className="absolute inset-0" style={{ zIndex: 1 }}>
-        <Canvas
-          dpr={[1, 1.5]}
-          gl={{ antialias: false, powerPreference: "high-performance" }}
-          camera={{ position: [0, 0, 18], fov: 42 }}
-        >
-          <Suspense fallback={null}>
-            <SpaceshipScene scrollProgress={scrollProgress} reducedMotion={reducedMotion} />
-          </Suspense>
-        </Canvas>
-      </div>
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -419,5 +267,3 @@ export default function HeroSection() {
     </section>
   )
 }
-
-useGLTF.preload("/spaceship.gltf")

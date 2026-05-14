@@ -22,11 +22,8 @@ function scrollToSection(id, attempt = 0) {
     return false
   }
 
-  const offset = window.innerWidth < 768 ? 76 : 16
-  const top = Math.max(window.scrollY + section.getBoundingClientRect().top - offset, 0)
-
+  section.scrollIntoView({ behavior: "smooth", block: "start" })
   window.history.replaceState(null, "", `#${id}`)
-  window.scrollTo({ top, behavior: "smooth" })
   return true
 }
 
