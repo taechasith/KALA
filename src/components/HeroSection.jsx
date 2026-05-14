@@ -73,22 +73,26 @@ function SpaceshipScene({ scrollProgress, reducedMotion }) {
   useFrame((state, delta) => {
     if (!shipRef.current) return
 
-    const targetX = THREE.MathUtils.lerp(7.8, -1.3, clamp(scrollProgress, 0, 1))
-    const targetY = THREE.MathUtils.lerp(2.8, 0.4, clamp(scrollProgress, 0, 1))
-    const targetZ = THREE.MathUtils.lerp(-7, -2.2, clamp(scrollProgress, 0, 1))
-    const bob = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.1) * 0.15
+    const progress = clamp(scrollProgress, 0, 1)
+    const targetX = THREE.MathUtils.lerp(8.8, -0.5, progress)
+    const targetY = THREE.MathUtils.lerp(3.1, 0.2, progress)
+    const targetZ = THREE.MathUtils.lerp(-7.8, -1.6, progress)
+    const bob = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.45) * 0.3
+    const sway = reducedMotion ? 0 : Math.cos(state.clock.elapsedTime * 0.9) * 0.22
 
-    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, targetX, 0.055)
+    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, targetX + sway, 0.055)
     shipRef.current.position.y = THREE.MathUtils.lerp(shipRef.current.position.y, targetY + bob, 0.055)
     shipRef.current.position.z = THREE.MathUtils.lerp(shipRef.current.position.z, targetZ, 0.055)
 
-    const rotationY = THREE.MathUtils.lerp(0.9, -0.2, clamp(scrollProgress, 0, 1))
-    const rotationZ = THREE.MathUtils.lerp(-0.25, 0.08, clamp(scrollProgress, 0, 1))
+    const rotationY = THREE.MathUtils.lerp(0.95, -0.14, progress)
+    const rotationZ = THREE.MathUtils.lerp(-0.28, 0.12, progress) + (reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.1) * 0.045)
     shipRef.current.rotation.y = THREE.MathUtils.lerp(shipRef.current.rotation.y, rotationY, 0.05)
     shipRef.current.rotation.z = THREE.MathUtils.lerp(shipRef.current.rotation.z, rotationZ, 0.05)
 
     if (!reducedMotion) {
-      shipRef.current.rotation.x += delta * 0.05
+      const rotationX = 0.08 + Math.sin(state.clock.elapsedTime * 1.35) * 0.08
+      shipRef.current.rotation.x = THREE.MathUtils.lerp(shipRef.current.rotation.x, rotationX, 0.05)
+      shipRef.current.rotation.y += delta * 0.018
     }
   })
 
@@ -101,7 +105,7 @@ function SpaceshipScene({ scrollProgress, reducedMotion }) {
 
       <StarField count={reducedMotion ? 900 : 1600} />
 
-      <group ref={shipRef} position={[7.8, 2.8, -7]} rotation={[0.1, 0.9, -0.25]} scale={reducedMotion ? 0.9 : 1.05}>
+      <group ref={shipRef} position={[8.8, 3.1, -7.8]} rotation={[0.1, 0.95, -0.28]} scale={reducedMotion ? 1.08 : 1.28}>
         <Clone object={shipScene} />
       </group>
 

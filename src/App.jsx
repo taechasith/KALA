@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import Navigation from "./components/Navigation"
 import HeroSection from "./components/HeroSection"
 import StatsPanel from "./components/StatsPanel"
@@ -88,12 +88,12 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  if (booting) {
+    return <EntryLoader />
+  }
+
   return (
     <div className="min-h-screen text-evidence relative" style={{ background:"#061116" }}>
-      <AnimatePresence>
-        {booting && <EntryLoader />}
-      </AnimatePresence>
-
       {/* Ambient fog blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-1/2 -left-1/4 w-[700px] h-[700px] rounded-full"
