@@ -91,30 +91,34 @@ function SiteSpaceship({ flight }) {
 
     const t = state.clock.elapsedTime
     const progress = clamp(flight.progress, 0, 1)
-    const scrollOrbit = progress * Math.PI * 4.4
-    const naturalDrift = flight.reducedMotion ? 0 : t * 0.16
-    const orbit = scrollOrbit + naturalDrift
+    const drift = flight.reducedMotion ? 0 : t * 0.045
+    const phase = progress * 3.25 + drift
+    const wave = phase * Math.PI * 2
+    const approach = (Math.sin(wave - Math.PI / 2) + 1) / 2
+    const depth = THREE.MathUtils.smootherstep(approach, 0, 1)
 
-    const edgeBias = Math.sin(progress * Math.PI * 5.2)
-    const baseX = Math.sin(orbit) * 8.4 + Math.sin(orbit * 0.41) * 2.1
-    const baseY = Math.cos(orbit * 0.72) * 3.15 + Math.sin(orbit * 1.35) * 1.1
-    const cursorAvoidX = flight.pointerX * -1.75
-    const cursorFollowY = flight.pointerY * -0.85
-    const bob = flight.reducedMotion ? 0 : Math.sin(t * 1.1) * 0.34
-    const targetZ = THREE.MathUtils.lerp(-6.4, -2.35, (Math.sin(orbit * 0.9) + 1) / 2)
+    const lateral = Math.sin(wave * 0.58) * 3.1 + Math.sin(wave * 0.19 + 1.2) * 1.15
+    const altitude = Math.cos(wave * 0.43 + 0.55) * 1.85 + Math.sin(wave * 0.91) * 0.52
+    const cursorNudgeX = flight.pointerX * -0.95
+    const cursorNudgeY = flight.pointerY * -0.55
+    const bob = flight.reducedMotion ? 0 : Math.sin(t * 1.25) * 0.22
+    const targetZ = THREE.MathUtils.lerp(-9.2, -1.65, depth)
+    const targetScale = THREE.MathUtils.lerp(0.62, 1.42, depth)
 
-    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, baseX + cursorAvoidX, 0.032)
-    shipRef.current.position.y = THREE.MathUtils.lerp(shipRef.current.position.y, baseY + cursorFollowY + bob, 0.034)
-    shipRef.current.position.z = THREE.MathUtils.lerp(shipRef.current.position.z, targetZ, 0.03)
+    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, lateral + cursorNudgeX, 0.035)
+    shipRef.current.position.y = THREE.MathUtils.lerp(shipRef.current.position.y, altitude + cursorNudgeY + bob, 0.036)
+    shipRef.current.position.z = THREE.MathUtils.lerp(shipRef.current.position.z, targetZ, 0.04)
+    shipRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.045)
 
-    const direction = Math.cos(orbit) >= 0 ? -1 : 1
-    const bank = THREE.MathUtils.clamp(edgeBias * 0.48 + flight.pointerX * 0.16, -0.65, 0.65)
-    shipRef.current.rotation.x = THREE.MathUtils.lerp(shipRef.current.rotation.x, 0.08 + flight.pointerY * 0.1, 0.04)
-    shipRef.current.rotation.y = THREE.MathUtils.lerp(shipRef.current.rotation.y, direction * 1.05 + flight.pointerX * 0.2, 0.04)
+    const yawTurn = Math.sin(wave * 0.58) * 0.34 + flight.pointerX * 0.1
+    const pitch = THREE.MathUtils.lerp(-0.16, 0.18, depth) + flight.pointerY * 0.055
+    const bank = THREE.MathUtils.clamp(-Math.cos(wave * 0.58) * 0.22 + flight.pointerX * 0.08, -0.32, 0.32)
+    shipRef.current.rotation.x = THREE.MathUtils.lerp(shipRef.current.rotation.x, pitch, 0.045)
+    shipRef.current.rotation.y = THREE.MathUtils.lerp(shipRef.current.rotation.y, Math.PI + yawTurn, 0.04)
     shipRef.current.rotation.z = THREE.MathUtils.lerp(shipRef.current.rotation.z, bank, 0.05)
 
     if (!flight.reducedMotion) {
-      shipRef.current.rotation.y += delta * 0.05
+      shipRef.current.rotation.x += Math.sin(t * 1.6) * delta * 0.018
     }
 
     if (lightRef.current) {
@@ -129,7 +133,7 @@ function SiteSpaceship({ flight }) {
       <ambientLight intensity={0.68} color="#17323a" />
       <directionalLight position={[7, 8, 8]} intensity={1.15} color="#d8f6ff" />
       <pointLight ref={lightRef} intensity={1.25} color="#F4B51F" distance={16} />
-      <group ref={shipRef} position={[8.8, 3.4, -5.5]} rotation={[0.08, -0.95, 0.24]} scale={flight.reducedMotion ? 0.88 : 1.06}>
+      <group ref={shipRef} position={[2.8, 1.4, -8.4]} rotation={[-0.12, Math.PI, 0.08]} scale={flight.reducedMotion ? 0.74 : 0.86}>
         <Clone object={shipScene} />
       </group>
     </group>
