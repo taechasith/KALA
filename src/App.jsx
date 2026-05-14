@@ -114,7 +114,7 @@ export default function App() {
         />
       </div>
 
-      <ImmersiveStars density={1300} intensity={0.48} speed={2.8} className="fixed inset-0 z-0 opacity-80" />
+      <ImmersiveStars density={1900} intensity={0.9} speed={3.4} className="fixed inset-0 z-0 opacity-100" />
       <Navigation />
 
       <main className="relative z-10">

@@ -200,7 +200,7 @@ export default function VideoArchive() {
   const withDvids = VIDEOS.filter(v => DVIDS_IDS[v.id]).length
 
   return (
-    <section className="min-h-screen py-16 px-4 snap-section" style={{ background: "rgba(6,17,22,0.86)" }}>
+    <section className="min-h-screen py-16 px-4 snap-section" style={{ background: "rgba(6,17,22,0.72)" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} className="mb-8 text-center">
           <p className="font-mono text-[0.6rem] tracking-[0.3em] mb-2" style={{ color:"rgba(200,122,58,0.7)" }}>DEPARTMENT OF DEFENSE — VIDEO ARCHIVE</p>

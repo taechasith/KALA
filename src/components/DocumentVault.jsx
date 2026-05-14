@@ -174,7 +174,7 @@ export default function DocumentVault() {
   const ERA_LABELS = { ALL:"ALL", WWII:"WW2", POSTWAR:"POST-WAR", COLDWAR:"COLD WAR", MODERN1:"MOD I", MODERN2:"MOD II", CURRENT:"2026" }
 
   return (
-    <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"rgba(6,17,22,0.86)" }}>
+    <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"rgba(6,17,22,0.72)" }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div

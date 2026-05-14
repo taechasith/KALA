@@ -69,10 +69,10 @@ function StarLayer({ count, spread, depth, speed, colorA, colorB, reducedMotion 
       </bufferGeometry>
       <pointsMaterial
         vertexColors
-        size={0.075}
+        size={0.095}
         sizeAttenuation
         transparent
-        opacity={0.86}
+        opacity={0.98}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
