@@ -358,7 +358,7 @@ export default function AIDecoder() {
   const canAnalyze = !loading && (file || selectedDoc)
 
   return (
-    <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"#061116" }}>
+    <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"rgba(6,17,22,0.86)" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} className="mb-8 text-center">
           <p className="font-mono text-[0.6rem] tracking-[0.3em] mb-2" style={{ color:"rgba(79,137,147,0.7)" }}>CLAUDE AI — DOCUMENT INTELLIGENCE</p>

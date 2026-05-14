@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { DOCUMENTS, STATS, AGENCIES, TYPES } from "../data/manifest"
-import ImmersiveStars from "./ImmersiveStars"
 
 function CountUp({ target, duration = 1500 }) {
   const [val, setVal] = useState(0)
@@ -64,8 +63,7 @@ export default function StatsPanel() {
   ]
 
   return (
-    <section className="relative min-h-screen overflow-hidden py-16 md:py-24 px-4 snap-section" style={{ background:"#061116" }}>
-      <ImmersiveStars density={820} intensity={0.62} speed={3.6} />
+    <section className="relative min-h-screen overflow-hidden py-16 md:py-24 px-4 snap-section" style={{ background:"rgba(6,17,22,0.86)" }}>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at 50% 35%, rgba(79,137,147,0.08), transparent 48%), linear-gradient(180deg, rgba(6,17,22,0.35), rgba(6,17,22,0.86))" }}

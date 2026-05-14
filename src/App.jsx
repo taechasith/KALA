@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Navigation from "./components/Navigation"
-import GlobalSpaceship from "./components/GlobalSpaceship"
 import ImmersiveStars from "./components/ImmersiveStars"
 import HeroSection from "./components/HeroSection"
 import StatsPanel from "./components/StatsPanel"
@@ -115,10 +114,10 @@ export default function App() {
         />
       </div>
 
-      <GlobalSpaceship />
+      <ImmersiveStars density={1300} intensity={0.48} speed={2.8} className="fixed inset-0 z-0 opacity-80" />
       <Navigation />
 
-      <main>
+      <main className="relative z-10">
         <div id="hero" className="nav-target snap-section">
           <ErrorBoundary><HeroSection /></ErrorBoundary>
         </div>

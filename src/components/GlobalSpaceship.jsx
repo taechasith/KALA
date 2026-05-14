@@ -140,11 +140,11 @@ function SiteSpaceship({ flight }) {
   )
 }
 
-export default function GlobalSpaceship() {
+export default function GlobalSpaceship({ className = "fixed inset-0", zIndex = 7 }) {
   const flight = useFlightInput()
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 7 }}>
+    <div className={`${className} pointer-events-none overflow-hidden`} style={{ zIndex }}>
       <Canvas
         dpr={[1, 1.35]}
         gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}

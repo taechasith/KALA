@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { STATS } from "../data/manifest"
+import GlobalSpaceship from "./GlobalSpaceship"
 
 function TypeWriter({ text, onDone }) {
   const [displayed, setDisplayed] = useState("")
@@ -97,8 +98,9 @@ export default function HeroSection() {
   return (
     <section
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden snap-section scanline"
-      style={{ background: "#061116" }}
+      style={{ background: "rgba(6,17,22,0.9)" }}
     >
+      <GlobalSpaceship className="absolute inset-0" zIndex={1} />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
