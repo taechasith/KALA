@@ -28,3 +28,6 @@ Thumbs.db
 
 # Large data files (documents + videos)
 /data/
+
+# Claude Code
+.claude/
