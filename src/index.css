@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  /* CI Palette */
+  --color-night:    #061116;
+  --color-fog:      #18333B;
+  --color-teal:     #4F8993;
+  --color-signal:   #F4B51F;
+  --color-evidence: #E9F3F1;
+  --color-rec:      #FF1E1E;
+
+  /* Legacy agency colors */
+  --color-dow:   #4F8993;
+  --color-fbi:   #FF1E1E;
+  --color-nasa:  #F4B51F;
+  --color-dos:   #7fb89e;
+  --color-usaf:  #6b8cba;
+  --color-army:  #8fa86b;
+  --color-video: #c87a3a;
+
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-poster: 'Bebas Neue', 'Impact', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+
+body {
+  background: #061116;
+  color: #E9F3F1;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #061116; }
+::-webkit-scrollbar-thumb { background: #18333B; border-radius: 2px; }
+
+/* Film grain / noise */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* Glass panels — fog blue base */
+.glass {
+  background: rgba(24, 51, 59, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(79, 137, 147, 0.12);
+}
+
+.glass-heavy {
+  background: rgba(6, 17, 22, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(79, 137, 147, 0.18);
+}
+
+/* Classified stamp */
+.classified-stamp {
+  font-family: var(--font-mono);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 2px solid;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 0.65rem;
+  color: #F4B51F;
+  border-color: #F4B51F80;
+}
+
+/* Camera frame corners */
+.cam-frame {
+  position: relative;
+}
+.cam-frame::before,
+.cam-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgba(244,181,31,0.35);
+  border-style: solid;
+}
+.cam-frame::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+.cam-frame::after  { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+/* REC indicator */
+@keyframes rec-blink { 0%,49%{opacity:1} 50%,100%{opacity:0.2} }
+.rec-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #FF1E1E;
+  box-shadow: 0 0 8px #FF1E1E;
+  animation: rec-blink 1s ease-in-out infinite;
+}
+
+/* Section scanline */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.scanline::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(transparent, rgba(79,137,147,0.1), transparent);
+  animation: scanline 10s linear infinite;
+  pointer-events: none;
+}
+
+/* Type cursor */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.cursor { animation: blink 1s step-end infinite; }
+
+/* Section snap */
+.snap-section { scroll-snap-align: start; }
+
+/* Agency colors — CI-mapped */
+.agency-DOW   { color: #4F8993; border-color: #4F8993; }
+.agency-FBI   { color: #FF1E1E; border-color: #FF1E1E; }
+.agency-NASA  { color: #F4B51F; border-color: #F4B51F; }
+.agency-DOS   { color: #7fb89e; border-color: #7fb89e; }
+.agency-USAF  { color: #6b8cba; border-color: #6b8cba; }
+.agency-ARMY  { color: #8fa86b; border-color: #8fa86b; }
+.agency-VIDEO { color: #c87a3a; border-color: #c87a3a; }
+
+.bg-agency-DOW   { background: rgba(79,137,147,0.12); }
+.bg-agency-FBI   { background: rgba(255,30,30,0.12); }
+.bg-agency-NASA  { background: rgba(244,181,31,0.12); }
+.bg-agency-DOS   { background: rgba(127,184,158,0.12); }
+.bg-agency-USAF  { background: rgba(107,140,186,0.12); }
+.bg-agency-VIDEO { background: rgba(200,122,58,0.12); }
+
+/* Poster / headline font helper */
+.font-poster { font-family: 'Bebas Neue', 'Impact', sans-serif; }
+
+/* Glow utilities */
+.glow-signal { text-shadow: 0 0 30px rgba(244,181,31,0.5); }
+.glow-teal   { text-shadow: 0 0 20px rgba(79,137,147,0.5); }
+.glow-rec    { text-shadow: 0 0 20px rgba(255,30,30,0.6); }
+
+/* Leaflet dark theme overrides */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #061116 !important;
+  border: 1px solid rgba(79,137,147,0.2) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.8) !important;
+  border-radius: 8px !important;
+  color: #E9F3F1 !important;
+}
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-close-button { color: #4F8993 !important; }
+.leaflet-popup-close-button:hover { color: #F4B51F !important; }
+.leaflet-control-zoom a {
+  background: rgba(6,17,22,0.9) !important;
+  color: #4F8993 !important;
+  border-color: rgba(79,137,147,0.2) !important;
+}
+.leaflet-control-zoom a:hover { background: rgba(24,51,59,0.9) !important; color: #F4B51F !important; }
+.leaflet-bar { border: 1px solid rgba(79,137,147,0.15) !important; }
