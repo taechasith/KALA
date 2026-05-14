@@ -9,7 +9,8 @@ const NAV_ITEMS = [
   { id: "correlation", label: "CORRELATE", short: "◎" },
   { id: "vault", label: "VAULT", short: "▣" },
   { id: "video", label: "FOOTAGE", short: "▶" },
-  { id: "decoder", label: "DECODE", short: "⌬" },
+  { id: "decoder",    label: "DECODE",    short: "⌬" },
+  { id: "birthdate",  label: "RESONANCE", short: "★" },
 ]
 
 function scrollToSection(id, attempt = 0) {

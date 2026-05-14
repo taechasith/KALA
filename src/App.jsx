@@ -12,6 +12,7 @@ const DocumentVault = lazy(() => import("./components/DocumentVault"))
 const VideoArchive = lazy(() => import("./components/VideoArchive"))
 const AIDecoder = lazy(() => import("./components/AIDecoder"))
 const DataCorrelation = lazy(() => import("./components/DataCorrelation"))
+const BirthDatePortal = lazy(() => import("./components/BirthDatePortal"))
 
 function SectionLoader({ label = "Loading..." }) {
   return (
@@ -170,6 +171,14 @@ export default function App() {
           <ErrorBoundary>
             <Suspense fallback={<SectionLoader label="Initializing AI decoder..." />}>
               <AIDecoder />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+
+        <div id="birthdate" className="nav-target snap-section">
+          <ErrorBoundary>
+            <Suspense fallback={<SectionLoader label="Calibrating temporal resonance..." />}>
+              <BirthDatePortal />
             </Suspense>
           </ErrorBoundary>
         </div>

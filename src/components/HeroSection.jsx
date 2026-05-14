@@ -94,6 +94,7 @@ export default function HeroSection() {
 
   const scrollToVault = () => document.getElementById("vault")?.scrollIntoView({ behavior: "smooth" })
   const scrollToDecoder = () => document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
+  const scrollToBirthdate = () => document.getElementById("birthdate")?.scrollIntoView({ behavior: "smooth" })
 
   return (
     <section
@@ -231,6 +232,19 @@ export default function HeroSection() {
             onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.borderColor = "rgba(79,137,147,0.4)" }}
           >
             DECODE DOCUMENT
+          </button>
+          <button
+            onClick={scrollToBirthdate}
+            className="px-6 py-2.5 rounded-full font-mono text-sm tracking-widest transition-all cursor-pointer"
+            style={{
+              background: "transparent",
+              color: "rgba(244,181,31,0.6)",
+              border: "1px solid rgba(244,181,31,0.25)",
+            }}
+            onMouseEnter={(e) => { e.target.style.background = "rgba(244,181,31,0.08)"; e.target.style.color = "#F4B51F"; e.target.style.borderColor = "rgba(244,181,31,0.5)" }}
+            onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.color = "rgba(244,181,31,0.6)"; e.target.style.borderColor = "rgba(244,181,31,0.25)" }}
+          >
+            ★ BIRTH DATE RESONANCE
           </button>
         </motion.div>
       </div>
