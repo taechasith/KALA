@@ -18,18 +18,23 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener("scroll", onScroll)
+    const onScroll = () => {
+      setScrolled(window.scrollY > 60)
+      const mid = window.innerHeight / 2
+      let closest = "hero"
+      let closestDist = Infinity
+      NAV_ITEMS.forEach(({ id }) => {
+        const el = document.getElementById(id)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const dist = Math.abs(rect.top + rect.height / 2 - mid)
+        if (dist < closestDist) { closestDist = dist; closest = id }
+      })
+      setActive(closest)
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    onScroll()
     return () => window.removeEventListener("scroll", onScroll)
-  }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id) }),
-      { threshold: 0.4 }
-    )
-    NAV_ITEMS.forEach(({ id }) => { const el = document.getElementById(id); if (el) observer.observe(el) })
-    return () => observer.disconnect()
   }, [])
 
   const scrollTo = id => { document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setOpen(false) }

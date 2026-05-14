@@ -53,7 +53,7 @@ export default function NetworkGraph() {
 
     const filteredLinks = relations
       .filter(r => docMap[r.source] && docMap[r.target])
-      .slice(0, 300)
+      .slice(0, 150)
       .map(r => ({ ...r }))
 
     // Arrow marker defs — one per agency color + default
@@ -76,12 +76,12 @@ export default function NetworkGraph() {
     })
 
     const sim = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(55).strength(0.12))
-      .force("charge", d3.forceManyBody().strength(-70))
+      .force("link", d3.forceLink(filteredLinks).id(d => d.id).distance(90).strength(0.08))
+      .force("charge", d3.forceManyBody().strength(-280).distanceMax(400))
       .force("center", d3.forceCenter(w / 2, h / 2))
-      .force("collision", d3.forceCollide(d => d.r + 4))
-      .force("x", d3.forceX(w / 2).strength(0.04))
-      .force("y", d3.forceY(h / 2).strength(0.04))
+      .force("collision", d3.forceCollide(d => d.r + 18))
+      .force("x", d3.forceX(w / 2).strength(0.02))
+      .force("y", d3.forceY(h / 2).strength(0.02))
 
     const g = svg.append("g")
 

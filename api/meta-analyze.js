@@ -25,5 +25,10 @@ export default async function handler(req, res) {
     }]
   })
 
-  res.json({ success: true, response: message.content[0].text })
+  const clean = message.content[0].text
+    .replace(/\*+/g, "")
+    .replace(/#{1,6} /g, "")
+    .replace(/`/g, "")
+    .trim()
+  res.json({ success: true, response: clean })
 }

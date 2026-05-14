@@ -45,18 +45,43 @@ function StarField({ count = 2500 }) {
   )
 }
 
-function Orb({ position, color, scale = 1 }) {
+function UFO({ position = [0, 0, 0], scale = 1 }) {
   const ref = useRef()
-  useFrame(() => {
-    if (ref.current) { ref.current.rotation.y += 0.008; ref.current.rotation.z += 0.004 }
+  useFrame(state => {
+    if (ref.current) {
+      ref.current.rotation.y += 0.006
+      ref.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.8) * 0.25
+    }
   })
   return (
-    <Float speed={1.5} rotationIntensity={0.4} floatIntensity={0.8}>
-      <mesh ref={ref} position={position} scale={scale}>
-        <icosahedronGeometry args={[0.3, 1]} />
-        <meshBasicMaterial color={color} wireframe />
+    <group ref={ref} position={position} scale={scale}>
+      {/* Main disc */}
+      <mesh>
+        <cylinderGeometry args={[1.1, 0.75, 0.22, 48]} />
+        <meshStandardMaterial color="#4F8993" metalness={0.85} roughness={0.15} />
       </mesh>
-    </Float>
+      {/* Dome */}
+      <mesh position={[0, 0.17, 0]}>
+        <sphereGeometry args={[0.46, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#E9F3F1" metalness={0.2} roughness={0.05} transparent opacity={0.65} />
+      </mesh>
+      {/* Signal ring */}
+      <mesh position={[0, -0.08, 0]}>
+        <torusGeometry args={[0.95, 0.055, 8, 48]} />
+        <meshBasicMaterial color="#F4B51F" />
+      </mesh>
+      {/* Outer ring */}
+      <mesh position={[0, -0.04, 0]}>
+        <torusGeometry args={[1.25, 0.035, 8, 48]} />
+        <meshBasicMaterial color="#4F8993" transparent opacity={0.55} />
+      </mesh>
+      {/* Bottom glow disc */}
+      <mesh position={[0, -0.13, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.5, 32]} />
+        <meshBasicMaterial color="#F4B51F" transparent opacity={0.18} />
+      </mesh>
+      <pointLight position={[0, -0.3, 0]} color="#F4B51F" intensity={1.2} distance={3} />
+    </group>
   )
 }
 
@@ -149,10 +174,12 @@ export default function HeroSection() {
       {/* 3D starfield */}
       <div className="absolute inset-0" style={{ zIndex: 1 }}>
         <Canvas camera={{ position: [0, 0, 30], fov: 60 }} gl={{ antialias: false }}>
+          <ambientLight intensity={0.4} color="#18333B" />
+          <pointLight position={[10, 10, 5]} color="#4F8993" intensity={1.5} />
           <StarField />
-          <Orb position={[-7, 2, -6]}  color="#4F8993" scale={1.4} />
-          <Orb position={[8, -3, -9]}  color="#F4B51F" scale={0.9} />
-          <Orb position={[3, 5, -4]}   color="#18333B" scale={1.1} />
+          <UFO position={[-6, 1.5, -5]}  scale={1.4} />
+          <UFO position={[8, -2.5, -9]}  scale={0.8} />
+          <UFO position={[2, 4.5, -3]}   scale={1.0} />
         </Canvas>
       </div>
 
