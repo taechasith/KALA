@@ -2,6 +2,10 @@
 
 This document is for future maintainers. It explains the data model, algorithms, visual systems, AI model contract, and project philosophy behind KALA.
 
+## Research Context
+
+This project was developed under CreativeDev.Lab's SciFact to SciFi Interfaces research program at CreativeLabTH Group.
+
 ## 1. Product Intent
 
 KALA is a cinematic intelligence workbench for declassified UAP archive exploration. The goal is not to prove a claim. The goal is to make large sets of mixed archival evidence easier to inspect, connect, and question.

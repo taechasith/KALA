@@ -4,6 +4,10 @@ KALA is an investigative interface for exploring declassified UAP-related docume
 
 The project is built as a React/Vite single-page app with Three.js visual layers, D3 relationship rendering, Leaflet geospatial views, Framer Motion transitions, and serverless API routes for KALA AI analysis.
 
+## Research Context
+
+This project was developed under CreativeDev.Lab's SciFact to SciFi Interfaces research program at CreativeLabTH Group.
+
 ## Philosophy
 
 KALA treats archival research as navigation through evidence, not as a static file list. The interface is designed around four principles:
