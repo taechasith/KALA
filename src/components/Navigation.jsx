@@ -18,33 +18,34 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    const sections = NAV_ITEMS
-      .map(({ id }) => document.getElementById(id))
-      .filter(Boolean)
+    const syncActiveSection = () => {
+      setScrolled(window.scrollY > 60)
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+      const probeLine = window.innerHeight * 0.35
+      let nextActive = "hero"
 
-        if (visible[0]?.target?.id) setActive(visible[0].target.id)
-      },
-      {
-        rootMargin: "-20% 0px -45% 0px",
-        threshold: [0.2, 0.35, 0.5, 0.7],
+      for (const { id } of NAV_ITEMS) {
+        const section = document.getElementById(id)
+        if (!section) continue
+
+        const rect = section.getBoundingClientRect()
+        if (rect.top <= probeLine && rect.bottom >= probeLine) {
+          nextActive = id
+        }
       }
-    )
 
-    sections.forEach((section) => observer.observe(section))
+      setActive((current) => current === nextActive ? current : nextActive)
+    }
+
+    const onScroll = () => window.requestAnimationFrame(syncActiveSection)
 
     window.addEventListener("scroll", onScroll, { passive: true })
-    onScroll()
+    window.addEventListener("resize", syncActiveSection)
+    syncActiveSection()
 
     return () => {
-      observer.disconnect()
       window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", syncActiveSection)
     }
   }, [])
 
@@ -52,7 +53,7 @@ export default function Navigation() {
     const el = document.getElementById(id)
     if (!el) return
 
-    const top = window.scrollY + el.getBoundingClientRect().top - 16
+    const top = window.scrollY + el.getBoundingClientRect().top - (window.innerWidth < 768 ? 76 : 16)
     window.scrollTo({ top, behavior: "smooth" })
     setActive(id)
     setOpen(false)

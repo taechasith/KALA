@@ -1,116 +1,156 @@
-import { useRef, useState, useEffect, useMemo } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
-import { Float } from "@react-three/drei"
+import { Clone, useAnimations, useGLTF } from "@react-three/drei"
 import { motion } from "framer-motion"
 import * as THREE from "three"
 import { STATS } from "../data/manifest"
 
-function StarField({ count = 2500 }) {
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function StarField({ count = 1600 }) {
   const ref = useRef()
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3)
     const colors = new Float32Array(count * 3)
-    const sizes = new Float32Array(count)
+
     for (let i = 0; i < count; i++) {
-      pos[i*3]   = (Math.random() - 0.5) * 200
-      pos[i*3+1] = (Math.random() - 0.5) * 200
-      pos[i*3+2] = (Math.random() - 0.5) * 200
-      // Cold teal / ice white stars
-      const hue = 0.55 + Math.random() * 0.1
-      const sat = 0.3 + Math.random() * 0.4
-      const lit = 0.6 + Math.random() * 0.4
-      const c = new THREE.Color().setHSL(hue, sat, lit)
-      colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b
-      sizes[i] = Math.random() * 2 + 0.3
+      pos[i * 3] = (Math.random() - 0.5) * 220
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 140
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 220
+
+      const color = new THREE.Color().setHSL(0.56 + Math.random() * 0.08, 0.24 + Math.random() * 0.25, 0.55 + Math.random() * 0.25)
+      colors[i * 3] = color.r
+      colors[i * 3 + 1] = color.g
+      colors[i * 3 + 2] = color.b
     }
-    return { pos, colors, sizes }
+
+    return { pos, colors }
   }, [count])
 
-  useFrame(state => {
-    if (ref.current) {
-      ref.current.rotation.y = state.clock.elapsedTime * 0.006
-      ref.current.rotation.x = state.clock.elapsedTime * 0.002
-    }
+  useFrame((state) => {
+    if (!ref.current) return
+    ref.current.rotation.y = state.clock.elapsedTime * 0.005
+    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.08) * 0.04
   })
 
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" array={positions.pos}    itemSize={3} count={count} />
-        <bufferAttribute attach="attributes-color"    array={positions.colors} itemSize={3} count={count} />
-        <bufferAttribute attach="attributes-size"     array={positions.sizes}  itemSize={1} count={count} />
+        <bufferAttribute attach="attributes-position" array={positions.pos} itemSize={3} count={count} />
+        <bufferAttribute attach="attributes-color" array={positions.colors} itemSize={3} count={count} />
       </bufferGeometry>
-      <pointsMaterial vertexColors sizeAttenuation size={0.35} transparent opacity={0.7} />
+      <pointsMaterial vertexColors size={0.33} sizeAttenuation transparent opacity={0.78} />
     </points>
   )
 }
 
-function UFO({ position = [0, 0, 0], scale = 1 }) {
-  const ref = useRef()
-  useFrame(state => {
-    if (ref.current) {
-      ref.current.rotation.y += 0.006
-      ref.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.8) * 0.25
+function SpaceshipScene({ scrollProgress, reducedMotion }) {
+  const shipRef = useRef()
+  const root = useRef()
+  const { scene, animations } = useGLTF("/spaceship.gltf")
+  const shipScene = useMemo(() => scene.clone(), [scene])
+  const { actions } = useAnimations(animations, root)
+
+  useEffect(() => {
+    if (!actions) return
+
+    Object.values(actions).forEach((action) => {
+      if (!action) return
+      if (reducedMotion) {
+        action.stop()
+      } else {
+        action.reset().fadeIn(0.6).play()
+      }
+    })
+
+    return () => {
+      Object.values(actions).forEach((action) => action?.stop())
+    }
+  }, [actions, reducedMotion])
+
+  useFrame((state, delta) => {
+    if (!shipRef.current) return
+
+    const targetX = THREE.MathUtils.lerp(7.8, -1.3, clamp(scrollProgress, 0, 1))
+    const targetY = THREE.MathUtils.lerp(2.8, 0.4, clamp(scrollProgress, 0, 1))
+    const targetZ = THREE.MathUtils.lerp(-7, -2.2, clamp(scrollProgress, 0, 1))
+    const bob = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.1) * 0.15
+
+    shipRef.current.position.x = THREE.MathUtils.lerp(shipRef.current.position.x, targetX, 0.055)
+    shipRef.current.position.y = THREE.MathUtils.lerp(shipRef.current.position.y, targetY + bob, 0.055)
+    shipRef.current.position.z = THREE.MathUtils.lerp(shipRef.current.position.z, targetZ, 0.055)
+
+    const rotationY = THREE.MathUtils.lerp(0.9, -0.2, clamp(scrollProgress, 0, 1))
+    const rotationZ = THREE.MathUtils.lerp(-0.25, 0.08, clamp(scrollProgress, 0, 1))
+    shipRef.current.rotation.y = THREE.MathUtils.lerp(shipRef.current.rotation.y, rotationY, 0.05)
+    shipRef.current.rotation.z = THREE.MathUtils.lerp(shipRef.current.rotation.z, rotationZ, 0.05)
+
+    if (!reducedMotion) {
+      shipRef.current.rotation.x += delta * 0.05
     }
   })
+
   return (
-    <group ref={ref} position={position} scale={scale}>
-      {/* Main disc */}
-      <mesh>
-        <cylinderGeometry args={[1.1, 0.75, 0.22, 48]} />
-        <meshStandardMaterial color="#4F8993" metalness={0.85} roughness={0.15} />
+    <group ref={root}>
+      <ambientLight intensity={0.55} color="#17323a" />
+      <directionalLight position={[10, 8, 6]} intensity={1.45} color="#d8f6ff" />
+      <pointLight position={[0, 2, 7]} intensity={1.2} color="#4F8993" />
+      <pointLight position={[-4, -2, 4]} intensity={1.05} color="#F4B51F" />
+
+      <StarField count={reducedMotion ? 900 : 1600} />
+
+      <group ref={shipRef} position={[7.8, 2.8, -7]} rotation={[0.1, 0.9, -0.25]} scale={reducedMotion ? 0.9 : 1.05}>
+        <Clone object={shipScene} />
+      </group>
+
+      <mesh position={[-4.5, -0.6, -8.5]} rotation={[0.4, 0.5, 0]}>
+        <torusGeometry args={[1.9, 0.035, 12, 80]} />
+        <meshBasicMaterial color="#4F8993" transparent opacity={0.18} />
       </mesh>
-      {/* Dome */}
-      <mesh position={[0, 0.17, 0]}>
-        <sphereGeometry args={[0.46, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#E9F3F1" metalness={0.2} roughness={0.05} transparent opacity={0.65} />
+
+      <mesh position={[-4.5, -0.6, -8.5]} rotation={[0.4, 0.5, 0]}>
+        <torusGeometry args={[2.5, 0.022, 12, 80]} />
+        <meshBasicMaterial color="#F4B51F" transparent opacity={0.12} />
       </mesh>
-      {/* Signal ring */}
-      <mesh position={[0, -0.08, 0]}>
-        <torusGeometry args={[0.95, 0.055, 8, 48]} />
-        <meshBasicMaterial color="#F4B51F" />
-      </mesh>
-      {/* Outer ring */}
-      <mesh position={[0, -0.04, 0]}>
-        <torusGeometry args={[1.25, 0.035, 8, 48]} />
-        <meshBasicMaterial color="#4F8993" transparent opacity={0.55} />
-      </mesh>
-      {/* Bottom glow disc */}
-      <mesh position={[0, -0.13, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.5, 32]} />
-        <meshBasicMaterial color="#F4B51F" transparent opacity={0.18} />
-      </mesh>
-      <pointLight position={[0, -0.3, 0]} color="#F4B51F" intensity={1.2} distance={3} />
     </group>
   )
 }
 
 function TypeWriter({ text, onDone }) {
   const [displayed, setDisplayed] = useState("")
+
   useEffect(() => {
     let i = 0
     const iv = setInterval(() => {
       setDisplayed(text.slice(0, i + 1))
       i++
-      if (i >= text.length) { clearInterval(iv); onDone?.() }
-    }, 60)
+      if (i >= text.length) {
+        clearInterval(iv)
+        onDone?.()
+      }
+    }, 55)
+
     return () => clearInterval(iv)
-  }, [text])
+  }, [text, onDone])
+
   return <>{displayed}<span className="cursor" style={{ color: "#F4B51F" }}>▌</span></>
 }
 
 function Timestamp() {
   const [ts, setTs] = useState("")
+
   useEffect(() => {
     const tick = () => setTs(new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC")
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [])
+
   return <span>{ts}</span>
 }
 
-// Mountain SVG silhouette
 function Mountains() {
   return (
     <svg
@@ -125,24 +165,20 @@ function Mountains() {
           <stop offset="100%" stopColor="#18333B" stopOpacity="0.5" />
         </linearGradient>
       </defs>
-      {/* Far range: fog blue */}
       <path
         d="M0,280 L0,140 L90,90 L180,120 L270,60 L360,100 L450,50 L540,95 L630,40 L720,85 L810,35 L900,80 L990,45 L1080,90 L1170,55 L1260,100 L1350,70 L1440,110 L1440,280 Z"
         fill="#18333B"
         opacity="0.45"
       />
-      {/* Mid range: darker */}
       <path
         d="M0,280 L0,180 L80,130 L160,165 L260,105 L360,150 L460,110 L560,145 L660,95 L760,135 L860,100 L960,140 L1060,110 L1160,145 L1260,120 L1360,155 L1440,130 L1440,280 Z"
         fill="#0d2028"
         opacity="0.8"
       />
-      {/* Foreground: solid night */}
       <path
         d="M0,280 L0,220 L70,195 L140,215 L220,180 L300,210 L390,175 L480,205 L570,185 L660,215 L750,180 L840,210 L930,190 L1020,215 L1110,195 L1200,215 L1290,200 L1380,220 L1440,210 L1440,280 Z"
         fill="#061116"
       />
-      {/* Mist layer */}
       <path
         d="M0,280 L0,245 C180,235 360,248 540,240 C720,232 900,245 1080,238 C1260,231 1350,244 1440,240 L1440,280 Z"
         fill="url(#fogGrad)"
@@ -154,16 +190,41 @@ function Mountains() {
 export default function HeroSection() {
   const [phase, setPhase] = useState(0)
   const [showStats, setShowStats] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const updateMotion = () => setReducedMotion(media.matches)
+    updateMotion()
+    media.addEventListener("change", updateMotion)
+    return () => media.removeEventListener("change", updateMotion)
+  }, [])
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 600)
-    const t2 = setTimeout(() => setPhase(2), 1800)
-    const t3 = setTimeout(() => setShowStats(true), 3200)
+    const t2 = setTimeout(() => setPhase(2), 1700)
+    const t3 = setTimeout(() => setShowStats(true), 2900)
     return () => [t1, t2, t3].forEach(clearTimeout)
   }, [])
 
-  const scrollToVault    = () => document.getElementById("vault")?.scrollIntoView({ behavior: "smooth" })
-  const scrollToDecoder  = () => document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
+  useEffect(() => {
+    const updateScroll = () => {
+      const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.95, 1), 0, 1)
+      setScrollProgress(progress)
+    }
+
+    updateScroll()
+    window.addEventListener("scroll", updateScroll, { passive: true })
+    window.addEventListener("resize", updateScroll)
+    return () => {
+      window.removeEventListener("scroll", updateScroll)
+      window.removeEventListener("resize", updateScroll)
+    }
+  }, [])
+
+  const scrollToVault = () => document.getElementById("vault")?.scrollIntoView({ behavior: "smooth" })
+  const scrollToDecoder = () => document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
 
   return (
     <section
@@ -171,62 +232,64 @@ export default function HeroSection() {
       className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden snap-section scanline"
       style={{ background: "#061116" }}
     >
-      {/* 3D starfield */}
       <div className="absolute inset-0" style={{ zIndex: 1 }}>
-        <Canvas camera={{ position: [0, 0, 30], fov: 60 }} gl={{ antialias: false }}>
-          <ambientLight intensity={0.4} color="#18333B" />
-          <pointLight position={[10, 10, 5]} color="#4F8993" intensity={1.5} />
-          <StarField />
-          <UFO position={[-6, 1.5, -5]}  scale={1.4} />
-          <UFO position={[8, -2.5, -9]}  scale={0.8} />
-          <UFO position={[2, 4.5, -3]}   scale={1.0} />
+        <Canvas
+          dpr={[1, 1.5]}
+          gl={{ antialias: false, powerPreference: "high-performance" }}
+          camera={{ position: [0, 0, 18], fov: 42 }}
+        >
+          <Suspense fallback={null}>
+            <SpaceshipScene scrollProgress={scrollProgress} reducedMotion={reducedMotion} />
+          </Suspense>
         </Canvas>
       </div>
 
-      {/* Fog gradient overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at 50% 80%, rgba(24,51,59,0.25) 0%, transparent 65%)",
+          background: "radial-gradient(circle at 70% 35%, rgba(79,137,147,0.18), transparent 32%), radial-gradient(ellipse at 50% 80%, rgba(24,51,59,0.25) 0%, transparent 65%)",
           zIndex: 2,
         }}
       />
 
-      {/* Vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(6,17,22,0.7) 100%)",
+          background: "radial-gradient(ellipse at 50% 50%, transparent 28%, rgba(6,17,22,0.76) 100%)",
           zIndex: 3,
         }}
       />
 
-      {/* HUD — top bar */}
+      <motion.div
+        className="absolute -right-12 top-[18%] h-[34vh] w-[34vh] rounded-full pointer-events-none"
+        style={{
+          zIndex: 4,
+          background: "radial-gradient(circle, rgba(244,181,31,0.16), transparent 65%)",
+          filter: "blur(18px)",
+        }}
+        animate={reducedMotion ? undefined : { y: [0, 16, 0], opacity: [0.45, 0.7, 0.45] }}
+        transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut" }}
+      />
+
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 md:px-8 py-4 pointer-events-none" style={{ zIndex: 10 }}>
-        {/* REC indicator */}
         <div className="flex items-center gap-2">
           <div className="rec-dot" />
           <span className="font-mono text-[0.65rem] tracking-widest" style={{ color: "#FF1E1E" }}>REC</span>
         </div>
-        {/* Timestamp */}
         <div className="font-mono text-[0.55rem] tracking-wider" style={{ color: "rgba(79,137,147,0.6)" }}>
           <Timestamp />
         </div>
-        {/* Case label */}
         <div className="font-mono text-[0.55rem] tracking-wider" style={{ color: "rgba(244,181,31,0.5)" }}>
           PURSUE · RELEASE 1
         </div>
       </div>
 
-      {/* Camera frame corners */}
       <div className="absolute pointer-events-none" style={{ top: "12%", left: "5%", width: 28, height: 28, borderTop: "2px solid rgba(244,181,31,0.35)", borderLeft: "2px solid rgba(244,181,31,0.35)", zIndex: 10 }} />
       <div className="absolute pointer-events-none" style={{ top: "12%", right: "5%", width: 28, height: 28, borderTop: "2px solid rgba(244,181,31,0.35)", borderRight: "2px solid rgba(244,181,31,0.35)", zIndex: 10 }} />
       <div className="absolute pointer-events-none" style={{ bottom: "22%", left: "5%", width: 28, height: 28, borderBottom: "2px solid rgba(244,181,31,0.35)", borderLeft: "2px solid rgba(244,181,31,0.35)", zIndex: 10 }} />
       <div className="absolute pointer-events-none" style={{ bottom: "22%", right: "5%", width: 28, height: 28, borderBottom: "2px solid rgba(244,181,31,0.35)", borderRight: "2px solid rgba(244,181,31,0.35)", zIndex: 10 }} />
 
-      {/* Main content */}
       <div className="relative text-center px-4 max-w-5xl mx-auto" style={{ zIndex: 10 }}>
-        {/* PURSUE badge */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: phase >= 1 ? 1 : 0, y: phase >= 1 ? 0 : -12 }}
@@ -235,12 +298,11 @@ export default function HeroSection() {
         >
           <div className="h-px w-8 opacity-50" style={{ background: "#4F8993" }} />
           <span className="classified-stamp text-[0.6rem] tracking-[0.2em]" style={{ color: "rgba(244,181,31,0.6)", borderColor: "rgba(244,181,31,0.3)" }}>
-            DECLASSIFIED — PURSUE 2026
+            DECLASSIFIED · PURSUE 2026
           </span>
           <div className="h-px w-8 opacity-50" style={{ background: "#4F8993" }} />
         </motion.div>
 
-        {/* KALA — poster title */}
         <motion.h1
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: phase >= 1 ? 1 : 0, y: 0, scale: 1 }}
@@ -255,7 +317,6 @@ export default function HeroSection() {
           KALA
         </motion.h1>
 
-        {/* Divider line */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: phase >= 1 ? 1 : 0 }}
@@ -264,14 +325,13 @@ export default function HeroSection() {
           style={{ background: "linear-gradient(90deg, transparent, #4F8993, transparent)" }}
         />
 
-        {/* Subtitle typewriter */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: phase >= 2 ? 1 : 0 }}
           className="font-mono text-[clamp(0.55rem,2vw,0.8rem)] tracking-[0.3em] mb-2"
           style={{ color: "rgba(79,137,147,0.8)" }}
         >
-          {phase >= 2 && <TypeWriter text="PURSUING UNRESOLVED PHENOMENA — ARCHIVE 1944–2026" />}
+          {phase >= 2 && <TypeWriter text="PURSUING UNRESOLVED PHENOMENA · ARCHIVE 1944-2026" />}
         </motion.p>
 
         <motion.p
@@ -280,10 +340,9 @@ export default function HeroSection() {
           className="font-mono text-[0.6rem] mb-8 tracking-widest"
           style={{ color: "#E9F3F1" }}
         >
-          कालः — TIME · FATE · THE ABSOLUTE
+          TIME · FATE · THE ABSOLUTE
         </motion.p>
 
-        {/* CTA buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 20 }}
@@ -292,37 +351,35 @@ export default function HeroSection() {
         >
           <button
             onClick={scrollToVault}
-            className="px-6 py-2.5 rounded-full font-mono text-sm font-bold tracking-widest transition-all"
+            className="px-6 py-2.5 rounded-full font-mono text-sm font-bold tracking-widest transition-all cursor-pointer"
             style={{
               background: "#F4B51F",
               color: "#061116",
               boxShadow: "0 0 24px rgba(244,181,31,0.3)",
             }}
-            onMouseEnter={e => { e.target.style.background = "#ffc84a"; e.target.style.boxShadow = "0 0 36px rgba(244,181,31,0.5)" }}
-            onMouseLeave={e => { e.target.style.background = "#F4B51F"; e.target.style.boxShadow = "0 0 24px rgba(244,181,31,0.3)" }}
+            onMouseEnter={(e) => { e.target.style.background = "#ffc84a"; e.target.style.boxShadow = "0 0 36px rgba(244,181,31,0.5)" }}
+            onMouseLeave={(e) => { e.target.style.background = "#F4B51F"; e.target.style.boxShadow = "0 0 24px rgba(244,181,31,0.3)" }}
           >
             ACCESS VAULT →
           </button>
           <button
             onClick={scrollToDecoder}
-            className="px-6 py-2.5 rounded-full font-mono text-sm tracking-widest transition-all"
+            className="px-6 py-2.5 rounded-full font-mono text-sm tracking-widest transition-all cursor-pointer"
             style={{
               background: "transparent",
               color: "#4F8993",
               border: "1px solid rgba(79,137,147,0.4)",
             }}
-            onMouseEnter={e => { e.target.style.background = "rgba(79,137,147,0.1)"; e.target.style.borderColor = "rgba(79,137,147,0.7)" }}
-            onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = "rgba(79,137,147,0.4)" }}
+            onMouseEnter={(e) => { e.target.style.background = "rgba(79,137,147,0.1)"; e.target.style.borderColor = "rgba(79,137,147,0.7)" }}
+            onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.borderColor = "rgba(79,137,147,0.4)" }}
           >
             DECODE DOCUMENT
           </button>
         </motion.div>
       </div>
 
-      {/* Mountain SVG */}
       <Mountains />
 
-      {/* Stats strip — above mountains */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: showStats ? 0.9 : 0, y: showStats ? 0 : 20 }}
@@ -331,8 +388,8 @@ export default function HeroSection() {
       >
         {[
           { label: "DOCUMENTS", value: STATS.totalDocs },
-          { label: "VIDEOS",    value: STATS.totalVideos },
-          { label: "AGENCIES",  value: STATS.agencies },
+          { label: "VIDEOS", value: STATS.totalVideos },
+          { label: "AGENCIES", value: STATS.agencies },
           { label: "LOCATIONS", value: STATS.locations },
           { label: "YEAR SPAN", value: "82 YRS" },
         ].map(({ label, value }) => (
@@ -343,11 +400,10 @@ export default function HeroSection() {
         ))}
       </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
         className="absolute left-1/2 -translate-x-1/2"
         style={{ bottom: "3%", zIndex: 10 }}
-        animate={{ opacity: [0.3, 0.7, 0.3], y: [0, 5, 0] }}
+        animate={reducedMotion ? undefined : { opacity: [0.3, 0.7, 0.3], y: [0, 5, 0] }}
         transition={{ repeat: Infinity, duration: 2.5 }}
       >
         <div className="w-px h-7 mx-auto mb-1" style={{ background: "linear-gradient(to bottom, transparent, rgba(79,137,147,0.5), transparent)" }} />
@@ -356,3 +412,5 @@ export default function HeroSection() {
     </section>
   )
 }
+
+useGLTF.preload("/spaceship.gltf")
