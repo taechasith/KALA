@@ -6,13 +6,14 @@ export function warGovThumb(filename) {
 }
 
 export const AGENCIES = {
-  DOW:   { label: "Dept. of War",     color: "#00d4ff", bg: "rgba(0,212,255,0.12)",   icon: "⚔" },
-  FBI:   { label: "FBI",              color: "#ff4444", bg: "rgba(255,68,68,0.12)",   icon: "🔍" },
-  NASA:  { label: "NASA",             color: "#ffd700", bg: "rgba(255,215,0,0.12)",   icon: "🚀" },
-  DOS:   { label: "Dept. of State",   color: "#00ff88", bg: "rgba(0,255,136,0.12)",   icon: "🌐" },
-  USAF:  { label: "US Air Force",     color: "#818cf8", bg: "rgba(129,140,248,0.12)", icon: "✈" },
-  ARMY:  { label: "US Army",          color: "#a3e635", bg: "rgba(163,230,53,0.12)",  icon: "⭐" },
-  VIDEO: { label: "DOD Video",        color: "#f97316", bg: "rgba(249,115,22,0.12)",  icon: "📹" },
+  DOW:      { label: "Dept. of War",     color: "#00d4ff", bg: "rgba(0,212,255,0.12)",   icon: "⚔" },
+  FBI:      { label: "FBI",              color: "#ff4444", bg: "rgba(255,68,68,0.12)",   icon: "🔍" },
+  NASA:     { label: "NASA",             color: "#ffd700", bg: "rgba(255,215,0,0.12)",   icon: "🚀" },
+  DOS:      { label: "Dept. of State",   color: "#00ff88", bg: "rgba(0,255,136,0.12)",   icon: "🌐" },
+  USAF:     { label: "US Air Force",     color: "#818cf8", bg: "rgba(129,140,248,0.12)", icon: "✈" },
+  ARMY:     { label: "US Army",          color: "#a3e635", bg: "rgba(163,230,53,0.12)",  icon: "⭐" },
+  VIDEO:    { label: "DOD Video",        color: "#f97316", bg: "rgba(249,115,22,0.12)",  icon: "📹" },
+  KHAOKALA: { label: "กลุ่มเขากะลา",    color: "#d4a017", bg: "rgba(212,160,23,0.12)",  icon: "⛰" },
 }
 
 export const TYPES = {
@@ -32,6 +33,8 @@ export const TYPES = {
   "photo-series":       { label: "Photo Series",            color: "#f472b6" },
   "launch-summary":     { label: "Launch Summary",          color: "#60a5fa" },
   "report":             { label: "Report",                  color: "#94a3b8" },
+  "newspaper":          { label: "Press Clipping",          color: "#c084fc" },
+  "field-record":       { label: "Field Record",            color: "#d4a017" },
 }
 
 export const ERAS = {
@@ -64,8 +67,13 @@ export const LOCATIONS = {
   "Kazakhstan":         { lat: 48,   lng: 68,   region: "Central Asia" },
   "Western US":         { lat: 37,   lng: -105, region: "North America" },
   "Space":              { lat: 0,    lng: 0,    region: "Orbital" },
-  "Germany":            { lat: 51,   lng: 10,   region: "Europe" },
-  "Unknown":            { lat: 0,    lng: 0,    region: "Unknown" },
+  "Germany":                { lat: 51,   lng: 10,   region: "Europe" },
+  "Unknown":                { lat: 0,    lng: 0,    region: "Unknown" },
+  "Nakhon Sawan, Thailand": { lat: 15.7, lng: 100.1, region: "Southeast Asia" },
+  "Bangkok, Thailand":      { lat: 13.8, lng: 100.5, region: "Southeast Asia" },
+  "Phetchaburi, Thailand":  { lat: 13.1, lng: 99.9,  region: "Southeast Asia" },
+  "Sing Buri, Thailand":    { lat: 14.9, lng: 100.4, region: "Southeast Asia" },
+  "Thailand":               { lat: 15.0, lng: 100.5, region: "Southeast Asia" },
 }
 
 function era(year) {
@@ -204,6 +212,67 @@ export const DOCUMENTS = [
   // 255 series
   { id:"UFO-DEFENSE", agency:"USAF", type:"intelligence",  year:null, title:"UFOs and Defense — What Should We Prepare For?", location:"Unknown",  filename:"255_413270_UFO's_and_Defense_What_Should_we_Prepare_For.pdf",               size:24581224, redacted:false },
   { id:"255-T763",    agency:"USAF", type:"transcript",    year:null, title:"T-763 R1B Transcripts",                   location:"Unknown",           filename:"255_t_763_r1b_transcripts.pdf",                                             size:277579,   redacted:false },
+
+  // ── กลุ่มเขากะลา (KHAO KALA GROUP) — Thailand, 1997–2006 ──────────────────
+  // Data source: กลุ่มเขากะลา archive
+  { id:"KK-001", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Press Report — Khao Kala Extraterrestrial Research Coverage",                   location:"Thailand",               filename:"692675231_1899485290905929_8365544817885178900_n.jpg",   size:53681,  redacted:false },
+  { id:"KK-002", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Capture — Dual Luminous Orbs, Nighttime Observation",                       location:"Nakhon Sawan, Thailand", filename:"692771799_2175292566624671_444255866404391107_n.jpg",    size:75226,  redacted:false },
+  { id:"KK-003", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Thai Post X-Cite — UAP Phenomena at Khao Kala Feature",                         location:"Thailand",               filename:"692934784_2019662342259366_5915090239785797656_n.jpg",   size:61199,  redacted:false },
+  { id:"KK-004", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Study Session — Group Members Reviewing Research Materials",                    location:"Thailand",               filename:"693149882_3884634888508535_1349184908148412110_n.jpg",   size:25744,  redacted:false },
+  { id:"KK-005", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Public Exposition — Khao Kala Exhibition Booth at Science Fair (I)",            location:"Bangkok, Thailand",      filename:"693235407_1740746450771744_8618462825823939862_n.jpg",   size:72756,  redacted:false },
+  { id:"KK-006", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Public Exposition — Khao Kala Exhibition Booth at Science Fair (II)",           location:"Bangkok, Thailand",      filename:"693235407_1978659942751809_7452299578842819881_n.jpg",   size:29713,  redacted:false },
+  { id:"KK-007", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Field Record — Group Members at Khao Kala Hillside Site",                       location:"Nakhon Sawan, Thailand", filename:"693312887_2084624728753883_7373379893979486381_n.jpg",   size:71301,  redacted:false },
+  { id:"KK-008", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Ceremony Record — Nighttime Gathering at Khao Kala, December 1997 (I)",         location:"Nakhon Sawan, Thailand", filename:"693342073_4261316784119828_6585101650033077225_n.jpg",   size:72264,  redacted:false },
+  { id:"KK-009", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Ceremony Record — Nighttime Gathering at Khao Kala, December 1997 (II)",        location:"Nakhon Sawan, Thailand", filename:"693342073_997871799344157_719658364275379783_n.jpg",    size:75209,  redacted:false },
+  { id:"KK-010", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Public Event — Group Activity at Ramkhamhaeng University Campus",               location:"Bangkok, Thailand",      filename:"693380080_1329213152732382_2245028370912988298_n.jpg",   size:63320,  redacted:false },
+  { id:"KK-011", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Press Report — Aerial Sighting Events Documented by Research Group",            location:"Thailand",               filename:"694260167_1214305147296885_1256785342991736189_n.jpg",   size:68000,  redacted:false },
+  { id:"KK-012", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Capture — Luminous Spherical Object, Nighttime Sky",                        location:"Nakhon Sawan, Thailand", filename:"694271987_1332579568750735_8550931819846070819_n.jpg",   size:75157,  redacted:false },
+  { id:"KK-013", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame — Glowing Orb with Luminous Rings, Feb 14 1999",                      location:"Nakhon Sawan, Thailand", filename:"694272555_1354057583202284_7261769275923036782_n.jpg",   size:71794,  redacted:false },
+  { id:"KK-014", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame — Close Detail of Aerial Light Phenomenon, Feb 14 1999",              location:"Nakhon Sawan, Thailand", filename:"694272555_899019209810302_3940265113159046914_n.jpg",    size:19477,  redacted:false },
+  { id:"KK-015", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame — Glowing Spherical Object, Nighttime Capture, Feb 14 1999",         location:"Nakhon Sawan, Thailand", filename:"694272555_960998180165233_6761923607814187043_n.jpg",    size:65481,  redacted:false },
+  { id:"KK-016", agency:"KHAOKALA", type:"photo-series", year:1999, title:"Field Visit — British Journalist Documents UAP Footage with Group (I)",         location:"Nakhon Sawan, Thailand", filename:"694282823_1376874530904734_9201274840378463818_n.jpg",   size:76897,  redacted:false },
+  { id:"KK-017", agency:"KHAOKALA", type:"photo-series", year:1999, title:"Field Visit — British Journalist Documents UAP Footage with Group (II)",        location:"Nakhon Sawan, Thailand", filename:"694282823_824772714039586_1751734434265626633_n.jpg",    size:60009,  redacted:false },
+  { id:"KK-018", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Media Coverage — Research Featured on Channel 7 Maya Com Broadcast",            location:"Thailand",               filename:"694295818_1420838850084313_7951108991630557487_n.jpg",   size:74889,  redacted:false },
+  { id:"KK-019", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Public Gathering — Large Crowd Event in Sing Buri Province",                    location:"Sing Buri, Thailand",    filename:"694325703_26647641728254400_5203717281171519755_n.jpg",  size:65394,  redacted:false },
+  { id:"KK-020", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Night Observation — Public Crowd Gathered at Khao Kala Research Site",          location:"Nakhon Sawan, Thailand", filename:"694459227_1302914848606200_6748506105795607269_n.jpg",   size:63069,  redacted:false },
+  { id:"KK-021", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Exposition Booth — UAP Research Photographs and Materials on Public Display",   location:"Bangkok, Thailand",      filename:"694523388_2022182531754333_426055449217390302_n.jpg",    size:72382,  redacted:false },
+  { id:"KK-022", agency:"KHAOKALA", type:"photo",        year:1998, title:"UAP Photograph No. 4 — Aerial Object with Pyramid-Cloud Formation",             location:"Nakhon Sawan, Thailand", filename:"694661855_1618364879464239_825542304520756693_n.jpg",    size:147314, redacted:false },
+  { id:"KK-023", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Field Record — Group Members at Research and Observation Location",             location:"Thailand",               filename:"694703495_1523247202659760_8538381616145089395_n.jpg",   size:59301,  redacted:false },
+  { id:"KK-024", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Press Report — Research Group Investigation Methods and Activities",             location:"Thailand",               filename:"694789777_27119175317720767_929946769777528004_n.jpg",   size:95432,  redacted:false },
+  { id:"KK-025", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Capture — Nighttime Aerial Phenomenon, Documentation Series",               location:"Nakhon Sawan, Thailand", filename:"695178987_2469510820180132_5207040698879383901_n.jpg",   size:47869,  redacted:false },
+  { id:"KK-026", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Public Gathering — Large Crowd Assembled at Hillside Research Site",            location:"Nakhon Sawan, Thailand", filename:"695199184_1672446563895411_7912159042701023561_n.jpg",   size:60689,  redacted:false },
+  { id:"KK-027", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Press Report — UAP Research Activities and Public Events Coverage",             location:"Thailand",               filename:"695349672_1961431617825028_5532835242037079568_n.jpg",   size:58122,  redacted:false },
+  { id:"KK-028", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Research Meeting — Group Members Reviewing Field Documentation",                location:"Thailand",               filename:"695421168_2786978405018603_3490521724974027110_n.jpg",   size:63055,  redacted:false },
+  { id:"KK-029", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Outdoor Event — Public Assembly at Open-Air Gathering Site",                    location:"Thailand",               filename:"695524811_981321324632588_6095231966340721775_n.jpg",    size:40240,  redacted:false },
+  { id:"KK-030", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Capture — Aerial Light Phenomenon, Nighttime Observation Series",           location:"Nakhon Sawan, Thailand", filename:"695572520_4297407973848085_318661372664250385_n.jpg",    size:67892,  redacted:false },
+  { id:"KK-031", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Media Record — Group Research Covered by Television Broadcast",                 location:"Thailand",               filename:"695668332_1534352768315602_379272759668713100_n.jpg",    size:94130,  redacted:false },
+  { id:"KK-032", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Archive Record — Documentation from Group Exhibition Activities",               location:"Thailand",               filename:"696135466_2153131712141980_5973413961412290451_n.jpg",   size:15903,  redacted:false },
+  { id:"KK-033", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Field Record — Group Research and Observation Activity",                        location:"Nakhon Sawan, Thailand", filename:"696138933_1344198444426969_4518480405874935259_n.jpg",   size:64483,  redacted:false },
+  { id:"KK-034", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Press Report — UAP Findings and Research Group Activities",                     location:"Thailand",               filename:"696195642_1893377797987294_9202946344411109348_n.jpg",   size:70757,  redacted:false },
+  { id:"KK-035", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Exposition Display — Convention Booth with UAP Research Materials",             location:"Bangkok, Thailand",      filename:"696208502_1314648160622990_6738733750303258943_n.jpg",   size:62774,  redacted:false },
+  { id:"KK-036", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Capture — Aerial Light Object, Nighttime Documentation",                    location:"Nakhon Sawan, Thailand", filename:"696211137_1735802344250547_3179896723273339336_n.jpg",   size:68517,  redacted:false },
+  { id:"KK-037", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame — Luminous Aerial Object, Night Observation Session",                 location:"Nakhon Sawan, Thailand", filename:"696224492_1305058351080535_8368885262140436434_n.jpg",   size:59933,  redacted:false },
+  { id:"KK-038", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Group Activity Record — Members Gathered for Meeting or Event",                 location:"Thailand",               filename:"696242954_1335213868511977_4676770394952541965_n.jpg",   size:22003,  redacted:false },
+  { id:"KK-039", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Field Documentation — Group Members at Research or Observation Site",           location:"Nakhon Sawan, Thailand", filename:"696259853_1049859731057683_671525396183651104_n.jpg",   size:74639,  redacted:false },
+  { id:"KK-040", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Archive Photograph — Historical Documentation of Group Activities",             location:"Thailand",               filename:"696263511_1657834115512293_5834746708010756349_n.jpg",   size:59123,  redacted:false },
+  { id:"KK-041", agency:"KHAOKALA", type:"newspaper",    year:1998, title:"Headline — Khao Kala Proves Extraterrestrial Contact",                          location:"Thailand",               filename:"696326365_840416468613657_7197496760945182039_n.jpg",    size:49756,  redacted:false },
+  { id:"KK-042", agency:"KHAOKALA", type:"photo-series", year:1999, title:"Field Visit — Kuan Im Bodhisattva Park, Phetchaburi, June 7 1999",              location:"Phetchaburi, Thailand",  filename:"696356292_1307252917401880_6124679922592114862_n.jpg",   size:89617,  redacted:false },
+  { id:"KK-043", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Convention Record — 2nd International Psychic Science Convention, Dec 1997",    location:"Bangkok, Thailand",      filename:"696456822_1991383938439522_6697451398779294239_n.jpg",   size:50412,  redacted:false },
+  { id:"KK-044", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame 23:10 — Large Luminous Disc with Concentric Rings, Feb 14 1999",      location:"Nakhon Sawan, Thailand", filename:"696511258_1764157658073689_2500390792683496010_n.jpg",   size:36919,  redacted:false },
+  { id:"KK-045", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Site Documentation — Khao Kala Mountain and Meditation Station Overview",       location:"Nakhon Sawan, Thailand", filename:"699240599_1600149551071979_3144629009180025125_n.jpg",   size:78552,  redacted:false },
+  { id:"KK-046", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Anniversary Ceremony — Buddhist Ritual and First-Year Gathering at Khao Kala", location:"Nakhon Sawan, Thailand", filename:"699374338_2044404296493390_3729614853904835494_n.jpg",   size:87064,  redacted:false },
+  { id:"KK-047", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame 22:38 — Two Luminous Orbs Side by Side, Feb 14 1999",                 location:"Nakhon Sawan, Thailand", filename:"699478742_2794513084237688_4738425761045371067_n.jpg",   size:19003,  redacted:false },
+  { id:"KK-048", agency:"KHAOKALA", type:"photo",        year:1999, title:"VHS Frame 22:38 — Single Luminous Sphere with Crowd Silhouettes, Feb 14 1999", location:"Nakhon Sawan, Thailand", filename:"699684967_2869715376698688_2240276951899400977_n.jpg",   size:29743,  redacted:false },
+  { id:"KK-049", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Public Event — Crowd Raises Hands Skyward to Welcome Aircraft, Dec 14 1997",   location:"Thailand",               filename:"699777772_1305396954250261_6697868997612465702_n.jpg",   size:63772,  redacted:false },
+  { id:"KK-050", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Anniversary Event — Buddhist Ceremony and First Annual Gathering, May 17 1998", location:"Nakhon Sawan, Thailand", filename:"700063026_998724825992009_8441817170511408259_n.jpg",    size:84583,  redacted:false },
+  { id:"KK-051", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Exposition Prep — Information Boards with Extraterrestrial Contact Materials",   location:"Thailand",               filename:"700069767_1288835200109957_1585925068932980615_n.jpg",   size:69491,  redacted:false },
+  { id:"KK-052", agency:"KHAOKALA", type:"photo-series", year:2000, title:"Exhibition Record — Dr. Thepphanom Presents UAP Photographs to Visitors",       location:"Thailand",               filename:"700091550_983164401347511_186225639597542410_n.jpg",    size:78164,  redacted:false },
+  { id:"KK-053", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Ceremony Record — Group Meditation Gesture to Signal Extraterrestrial Contact",  location:"Nakhon Sawan, Thailand", filename:"700101822_794588563587873_2854905880637747858_n.jpg",   size:69579,  redacted:false },
+  { id:"KK-054", agency:"KHAOKALA", type:"photo-series", year:2006, title:"Exposition 2006 — Visitors at Khao Kala Research Exhibition Booth",             location:"Thailand",               filename:"700154422_983166077413443_766784977924429602_n.jpg",    size:78550,  redacted:false },
+  { id:"KK-055", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Convention Lecture — Aura Energy Presentation, Ramkhamhaeng Univ., Dec 13 1997", location:"Bangkok, Thailand",     filename:"700266356_1130877076267495_2766172438648513023_n.jpg",  size:66431,  redacted:false },
+  { id:"KK-056", agency:"KHAOKALA", type:"photo-series", year:1998, title:"Field Documentation — Practitioners Traveling to Ceremony Site in Phetchaburi",  location:"Phetchaburi, Thailand",  filename:"700471732_2765000073862757_5148354855881622894_n.jpg",   size:70158,  redacted:false },
+  { id:"KK-057", agency:"KHAOKALA", type:"photo-series", year:1999, title:"UAP Model — Saucer-Shaped Craft Display at Kuan Im Park, Phetchaburi",           location:"Phetchaburi, Thailand",  filename:"700529692_1686940389051126_6394925251435708041_n.jpg",   size:102605, redacted:false },
+  { id:"KK-058", agency:"KHAOKALA", type:"photo-series", year:1997, title:"Night Ceremony — Dr. Thepphanom Leads Followers to Telepathic Contact Site",     location:"Nakhon Sawan, Thailand", filename:"700678742_1284718107111570_3274811615342309566_n.jpg",   size:58655,  redacted:false },
 ].map(d => ({ ...d, era: era(d.year) }))
 
 // 24 DOD Videos (DVIDS hosted)

@@ -199,12 +199,16 @@ export default function App() {
           >
             war.gov/ufo
           </a>
+          {" "}· กลุ่มเขากะลา
         </p>
         <p className="font-mono text-[0.5rem]" style={{ color: "rgba(79,137,147,0.2)" }}>
           ALL DOCUMENTS DECLASSIFIED UNDER PRESIDENTIAL ORDER · WAR.GOV/UFO
         </p>
         <p className="font-mono text-[0.5rem]" style={{ color: "rgba(79,137,147,0.2)" }}>
           © 2026 CreativeLabTH Group · SciFact to SciFi Interfaces · CreativeDev.Lab@HSUTCC
+        </p>
+        <p className="font-mono text-[0.5rem]" style={{ color: "rgba(79,137,147,0.15)" }}>
+          SPECIAL THANKS · YoungTurk Ramsomphob · Director, KHAO KALA (2026)
         </p>
       </footer>
     </div>

@@ -98,7 +98,7 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden snap-section scanline"
+      className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden scanline"
       style={{ background: "rgba(6,17,22,0.76)" }}
     >
       <GlobalSpaceship className="absolute inset-0" zIndex={1} />

@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",
+    "@huggingface/hub": "^2.12.0",
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
     "@tailwindcss/vite": "^4.3.0",
     "autoprefixer": "^10.5.0",
     "d3": "^7.9.0",
+    "dotenv": "^17.4.2",
     "framer-motion": "^11.11.0",
     "leaflet": "^1.9.4",
     "pdfjs-dist": "^5.7.284",

@@ -289,7 +289,7 @@ function KeyCorrelations() {
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function DataCorrelation() {
   return (
-    <section className="min-h-screen py-16 px-4 snap-section" style={{ background:"rgba(6,17,22,0.72)" }}>
+    <section className="min-h-screen py-16 px-4" style={{ background:"rgba(6,17,22,0.72)" }}>
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity:0, y:20 }}

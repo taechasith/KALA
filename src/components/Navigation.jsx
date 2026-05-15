@@ -34,42 +34,40 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const syncActiveSection = () => {
+    const sync = () => {
       setScrolled(window.scrollY > 60)
 
-      const probeLine = window.innerHeight * 0.35
-      let nextActive = "hero"
+      // Pick section with the most pixels visible in viewport
+      let bestId = NAV_ITEMS[0].id
+      let bestPx = -1
+      const vh = window.innerHeight
 
       for (const { id } of NAV_ITEMS) {
-        const section = document.getElementById(id)
-        if (!section) continue
-
-        const rect = section.getBoundingClientRect()
-        if (rect.top <= probeLine && rect.bottom >= probeLine) {
-          nextActive = id
-        }
+        const el = document.getElementById(id)
+        if (!el) continue
+        const { top, bottom } = el.getBoundingClientRect()
+        const px = Math.max(0, Math.min(bottom, vh) - Math.max(top, 0))
+        if (px > bestPx) { bestPx = px; bestId = id }
       }
 
-      setActive((current) => current === nextActive ? current : nextActive)
+      setActive(bestId)
     }
 
-    const onScroll = () => window.requestAnimationFrame(syncActiveSection)
+    let raf = null
+    const onScroll = () => { if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(sync) }
 
     window.addEventListener("scroll", onScroll, { passive: true })
-    window.addEventListener("resize", syncActiveSection)
-    window.addEventListener("load", syncActiveSection)
-    syncActiveSection()
+    window.addEventListener("scrollend", sync, { passive: true })
+    sync()
 
     return () => {
       window.removeEventListener("scroll", onScroll)
-      window.removeEventListener("resize", syncActiveSection)
-      window.removeEventListener("load", syncActiveSection)
+      window.removeEventListener("scrollend", sync)
     }
   }, [])
 
   const handleNavClick = (id) => {
     scrollToSection(id)
-    setActive(id)
     setOpen(false)
   }
 

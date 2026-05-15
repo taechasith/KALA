@@ -63,7 +63,7 @@ export default function StatsPanel() {
   ]
 
   return (
-    <section className="relative min-h-screen overflow-hidden py-16 md:py-24 px-4 snap-section" style={{ background:"rgba(6,17,22,0.72)" }}>
+    <section className="relative min-h-screen overflow-hidden py-16 md:py-24 px-4" style={{ background:"rgba(6,17,22,0.72)" }}>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at 50% 35%, rgba(79,137,147,0.08), transparent 48%), linear-gradient(180deg, rgba(6,17,22,0.35), rgba(6,17,22,0.86))" }}
