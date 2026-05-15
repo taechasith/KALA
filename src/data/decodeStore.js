@@ -11,11 +11,11 @@ export function startDecode(doc) {
     body: JSON.stringify({ filename: doc.filename, docId: doc.id, docMeta: doc, fileType: "metadata" }),
   }).then(r => r.json())
 
+  window.dispatchEvent(new CustomEvent("kala:decode-start", { detail: { title: doc.title, id: doc.id } }))
+
   if (_handler) {
-    // AIDecoder already mounted — push directly
     _handler(doc, promise)
   } else {
-    // AIDecoder not yet mounted — stash for consumeDecode on mount
     decodeStore.doc = doc
     decodeStore.promise = promise
   }

@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Navigation from "./components/Navigation"
 import ImmersiveStars from "./components/ImmersiveStars"
 import HeroSection from "./components/HeroSection"
@@ -13,6 +13,69 @@ const VideoArchive = lazy(() => import("./components/VideoArchive"))
 const AIDecoder = lazy(() => import("./components/AIDecoder"))
 const DataCorrelation = lazy(() => import("./components/DataCorrelation"))
 const BirthDatePortal = lazy(() => import("./components/BirthDatePortal"))
+
+function DecodeToast() {
+  const [toast, setToast] = useState(null)
+
+  useEffect(() => {
+    function onDecodeStart(e) {
+      setToast(e.detail)
+      const t = setTimeout(() => setToast(null), 3000)
+      return () => clearTimeout(t)
+    }
+    window.addEventListener("kala:decode-start", onDecodeStart)
+    return () => window.removeEventListener("kala:decode-start", onDecodeStart)
+  }, [])
+
+  return (
+    <AnimatePresence>
+      {toast && (
+        <motion.div
+          key={toast.id}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.25 }}
+          className="fixed top-4 left-1/2 z-[200] pointer-events-none"
+          style={{ transform: "translateX(-50%)" }}
+        >
+          <div
+            className="flex items-center gap-3 px-5 py-3 rounded-2xl font-mono"
+            style={{
+              background: "rgba(6,17,22,0.95)",
+              border: "1px solid rgba(244,181,31,0.4)",
+              boxShadow: "0 0 32px rgba(244,181,31,0.15)",
+            }}
+          >
+            <motion.span
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="text-base"
+              style={{ color: "#F4B51F", display: "inline-block" }}
+            >
+              ⟳
+            </motion.span>
+            <div>
+              <p className="text-[0.5rem] tracking-[0.3em] mb-0.5" style={{ color: "rgba(79,137,147,0.7)" }}>KALA AI — DECODING</p>
+              <p className="text-xs font-bold" style={{ color: "#E9F3F1" }}>{toast.title?.substring(0, 48)}{toast.title?.length > 48 ? "…" : ""}</p>
+            </div>
+            <div className="flex gap-1 ml-2">
+              {[0, 1, 2].map(i => (
+                <motion.div
+                  key={i}
+                  animate={{ scaleY: [1, 2.5, 1] }}
+                  transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.15, ease: "easeInOut" }}
+                  className="w-0.5 h-2 rounded-full origin-bottom"
+                  style={{ background: "#F4B51F" }}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 function SectionLoader({ label = "Loading..." }) {
   return (
@@ -116,6 +179,7 @@ export default function App() {
       </div>
 
       <ImmersiveStars density={1900} intensity={0.9} speed={3.4} className="fixed inset-0 z-0 opacity-100" />
+      <DecodeToast />
       <Navigation />
 
       <main className="relative z-10">

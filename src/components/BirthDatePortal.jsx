@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, VIDEOS, AGENCIES } from "../data/manifest"
+import { startDecode } from "../data/decodeStore"
 import { SIGHTINGS, CATEGORIES, CREDIBILITY_COLORS, getZodiac, getSightingsByDate } from "../data/sightings"
 
 const MONTH_NAMES = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
@@ -14,7 +15,7 @@ function scrollToSection(id) {
 }
 
 function sendToDecoder(doc) {
-  sessionStorage.setItem("kala-decode-doc", JSON.stringify(doc))
+  startDecode(doc)
   scrollToSection("decoder")
 }
 

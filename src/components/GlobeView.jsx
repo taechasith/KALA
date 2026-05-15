@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, LOCATIONS, AGENCIES } from "../data/manifest"
+import { startDecode } from "../data/decodeStore"
 import "leaflet/dist/leaflet.css"
 
 function useIncidentGroups() {
@@ -223,7 +224,7 @@ export default function GlobeView() {
                   </div>
 
                   <button
-                    onClick={() => document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    onClick={() => { startDecode(selected.docs[0]); document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth", block: "start" }) }}
                     className="mt-3 w-full py-1.5 rounded-lg text-xs font-mono border transition-all"
                     style={{ border: "1px solid rgba(244,181,31,0.3)", color: "#F4B51F" }}
                   >

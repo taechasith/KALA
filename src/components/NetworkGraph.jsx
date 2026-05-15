@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import * as d3 from "d3"
 import { DOCUMENTS, AGENCIES, computeRelations } from "../data/manifest"
+import { startDecode } from "../data/decodeStore"
 
 const AGENCY_COLORS = Object.fromEntries(
   Object.entries(AGENCIES).map(([k, v]) => [k, v.color])
@@ -395,7 +396,7 @@ export default function NetworkGraph() {
                     </div>
                   </div>
                   <button
-                    onClick={() => document.getElementById("decoder")?.scrollIntoView({ behavior:"smooth" })}
+                    onClick={() => { startDecode(selected); document.getElementById("decoder")?.scrollIntoView({ behavior:"smooth" }) }}
                     className="mt-3 w-full py-1.5 rounded-lg text-xs font-mono border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition-all"
                   >
                     DECODE →
