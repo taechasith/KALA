@@ -1,6 +1,6 @@
 # KALA
 
-KALA is an investigative web interface for exploring declassified UAP-related archive material. It combines document metadata, DOD video references, geospatial clustering, document relationship graphs, correlation dashboards, and AI-assisted document analysis into a single React/Vite application.
+KALA is an investigative web interface for exploring declassified UAP-related archive material. It combines document metadata, DOD video references, geospatial clustering, document relationship graphs, correlation dashboards, AI-assisted document analysis, and date-based resonance mapping into a single React/Vite application.
 
 The project is designed for readers who need to understand an archive before drawing conclusions from it. Instead of presenting files as a flat list, KALA lets a reader ask: where did this record come from, what era does it belong to, what location does it describe, what other records are nearby in the data model, and how confident should an AI-assisted interpretation be?
 
@@ -12,16 +12,15 @@ The interface uses the language of intelligence displays, star maps, relationshi
 
 ## What A Reader Can Do
 
-KALA is useful when a reader wants to move through the archive from multiple angles:
-
 - Start with the hero and archive overview to understand the size and time span of the collection.
 - Use agency, era, type, and location summaries to see which parts of the archive dominate.
 - Open the geospatial map to find repeated incident zones and location clusters.
-- Explore the GitNexus document graph to inspect relationships between records.
+- Explore the document network graph to inspect relationships between records.
 - Use the correlation dashboard to compare years, agencies, document types, and locations.
 - Search the document vault by title, id, location, filename, agency, type, and era.
 - Open DOD video metadata and embedded DVIDS streams where public video ids are available.
-- Send uploaded files, selected metadata records, images, or video frames to KALA AI for structured analysis.
+- Use the birth date resonance portal to find historically significant UAP events near a given date.
+- Click any `DECODE WITH AI` button from the vault, network graph, globe, or resonance portal to auto-trigger KALA AI analysis — no manual re-selection required.
 
 KALA does not try to prove a claim by itself. It is an evidence navigation layer. The application helps the reader decide which records are worth opening, comparing, or questioning next.
 
@@ -67,23 +66,13 @@ The video archive is modeled separately from documents. Videos use agency key `V
 
 The statistics panel gives the reader a fast sense of scale. It shows total files, document count, video count, year span, agency distribution, era distribution, top locations, and redaction count.
 
-This view answers basic orientation questions:
-
-- How large is the collection?
-- Which agencies appear most often?
-- Which periods are overrepresented?
-- Which locations repeat?
-- How much of the collection has redaction flags?
-
 ### Global Incident Map
 
-The map groups documents by known geographic location. `Unknown` and `Space` are intentionally excluded from map markers because they either cannot be mapped to a meaningful place or represent orbital context rather than a ground location.
+The map groups documents by known geographic location. `Unknown` and `Space` are intentionally excluded from map markers. Selecting a marker opens a panel listing related documents for that zone. Clicking `DECODE WITH AI` from that panel sends the first document from the zone directly into KALA AI.
 
-Each marker represents a location group. Marker radius increases with the number of records in that group. Selecting a marker focuses the map and opens a panel listing related documents for that zone.
+### Document Network
 
-### GitNexus Document Network
-
-The network graph uses D3 force simulation. Nodes represent documents, node color follows agency color, node size is influenced by file size, and edges represent computed relationships.
+The network graph uses D3 force simulation. Nodes represent documents, node color follows agency color, and edges represent computed relationships from shared location, agency, era, and type metadata. Clicking `DECODE` on any selected node sends that document directly into KALA AI.
 
 Relations are generated from shared metadata:
 
@@ -94,8 +83,6 @@ same era            -> +1.0
 same type           -> +0.5
 emit edge if weight >= 3
 ```
-
-This keeps the graph from becoming too dense. A shared known location creates a strong edge on its own. Agency, era, and type are supporting signals.
 
 ### Data Correlation
 
@@ -111,7 +98,7 @@ These charts are not a statistical model. They are exploratory views that help a
 
 ### Document Vault
 
-The vault is the main document browsing surface. It supports search, agency filter, era filter, pagination, document details, file metadata, and handoff into the decoder.
+The vault is the main document browsing surface. It supports search, agency filter, era filter, pagination, document details, and file metadata.
 
 Selecting a document opens a modal with:
 
@@ -123,15 +110,12 @@ Selecting a document opens a modal with:
 - era
 - file size
 - redaction status
-- expected local archive path
 
-The `DECODE WITH AI` action passes the selected document metadata into the decoder through `sessionStorage` and scrolls to the decoder section.
+The `DECODE WITH AI` action fires the API call immediately via `startDecode` and scrolls to the decoder section. Analysis begins without any manual re-selection in the decoder.
 
 ### UAP Footage
 
 The video archive displays 24 DOD video metadata records. Some records have known DVIDS video ids and can be embedded or opened on DVIDS. Records without known public video ids fall back to a DVIDS search link.
-
-This section is metadata-driven. The app does not store large video files in the repository.
 
 ### KALA AI Decoder
 
@@ -142,7 +126,7 @@ The decoder supports four analysis modes:
 - image analysis for common image formats
 - video frame analysis by extracting representative frames client-side
 
-PDF handling currently sends a binary/base64-derived placeholder path rather than true PDF text extraction. If full PDF understanding is required, add a dedicated client or server PDF text extraction step and send extracted text to the API.
+PDF handling currently sends a binary/base64-derived placeholder rather than true PDF text extraction.
 
 KALA AI returns structured JSON with:
 
@@ -160,6 +144,17 @@ KALA AI returns structured JSON with:
 
 Metadata-only analysis is required to keep confidence below `0.4` because no document body, image evidence, or video frame evidence has been decoded.
 
+When a decode is triggered from any section, a toast notification appears at the top of the page showing the document title and a progress indicator while the request is in flight.
+
+### Birth Date Resonance Portal
+
+The resonance portal lets a reader enter a birth date and discover historically significant UAP events close to that date. It shows:
+
+- zodiac sign and UAP archetype profile
+- nearest sightings by calendar proximity
+- related document records
+- direct decode handoff into KALA AI
+
 ## Tech Stack
 
 - React 18
@@ -169,8 +164,6 @@ Metadata-only analysis is required to keep confidence below `0.4` because no doc
 - D3 for the document network
 - Leaflet and React Leaflet for the map
 - Framer Motion for transitions
-- Recharts dependency available for charting
-- PDF.js dependency available for future PDF extraction work
 - Anthropic SDK behind the serverless KALA AI API routes
 
 ## Getting Started
@@ -230,11 +223,15 @@ api/
 public/
   spaceship.gltf      3D spaceship model used in the hero section
 src/
-  App.jsx             App shell, boot loader, section layout, lazy loading
+  App.jsx             App shell, boot loader, section layout, lazy loading, DecodeToast
   components/         UI sections, visual systems, archive tools
-  data/manifest.js    Canonical archive metadata and relation functions
+  data/
+    manifest.js       Canonical archive metadata and relation functions
+    decodeStore.js    Module-level decode state; fires API calls on button click
+    sightings.js      UAP sighting records and zodiac/date utilities
   index.css           Global styling, fonts, layout, HUD visual system
 vite.config.js        Vite, Tailwind plugin, dev proxy, chunk splitting
+vercel.json           Deployment config for Vercel serverless API routes
 ```
 
 ## Important Implementation Details
@@ -250,11 +247,25 @@ correlation
 vault
 video
 decoder
+birthdate
 ```
 
 The global starfield is mounted once behind all content. The 3D spaceship is mounted only in the hero section. Decorative canvas layers should not capture pointer events.
 
 The manifest is the source of truth for records, agencies, types, eras, locations, videos, computed relations, computed communities, and summary stats.
+
+### Decode Handoff Pattern
+
+`src/data/decodeStore.js` coordinates the decode trigger across all sections without requiring the components to know about each other.
+
+When any `DECODE WITH AI` button is clicked:
+
+1. `startDecode(doc)` fires the `/api/analyze` POST immediately.
+2. A `kala:decode-start` custom DOM event is dispatched — `DecodeToast` in `App.jsx` listens to this and shows a toast notification.
+3. If `AIDecoder` is already mounted, the promise and doc are pushed directly via a registered handler.
+4. If `AIDecoder` is not yet mounted, the doc and promise are stashed and consumed when it mounts.
+
+This means the API call is already in flight by the time the scroll animation ends.
 
 ## Data Model Summary
 

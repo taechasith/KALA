@@ -25,7 +25,7 @@ Think of KALA as four layers over one manifest:
 1. Orientation: hero, boot sequence, archive stats, agency and era summaries.
 2. Spatial analysis: map markers and location group panels.
 3. Relationship analysis: D3 network edges from shared metadata.
-4. Interpretation support: vault handoff and KALA AI structured analysis.
+4. Interpretation support: vault, network, globe, and resonance portal handoff into KALA AI structured analysis.
 
 Every section should help the reader ask a better next question. Avoid UI copy that implies the app has proven a case. Prefer language that describes evidence, metadata, confidence, relation strength, or source context.
 
@@ -37,6 +37,7 @@ Top-level layout in `src/App.jsx`:
 
 ```text
 EntryLoader
+DecodeToast          (fixed global toast — listens for kala:decode-start events)
 ImmersiveStars
 Navigation
 HeroSection
@@ -47,6 +48,7 @@ DataCorrelation
 DocumentVault
 VideoArchive
 AIDecoder
+BirthDatePortal
 Footer
 ```
 
@@ -59,6 +61,7 @@ DocumentVault
 VideoArchive
 AIDecoder
 DataCorrelation
+BirthDatePortal
 ```
 
 The root section ids live in `App.jsx`:
@@ -72,15 +75,16 @@ correlation
 vault
 video
 decoder
+birthdate
 ```
 
 Treat those ids as canonical. Navigation and scroll handoffs depend on them.
 
 ## 4. Main Data Sources
 
-The canonical app data lives in `src/data/manifest.js`.
+The canonical app data lives in `src/data/manifest.js` and `src/data/sightings.js`.
 
-Exports:
+`manifest.js` exports:
 
 ```text
 AGENCIES
@@ -92,6 +96,17 @@ VIDEOS
 computeRelations(docs)
 computeCommunities(docs)
 STATS
+warGovThumb(filename)
+```
+
+`sightings.js` exports:
+
+```text
+SIGHTINGS
+CATEGORIES
+CREDIBILITY_COLORS
+getZodiac(month, day)
+getSightingsByDate(month, day)
 ```
 
 The current manifest has:
@@ -229,15 +244,7 @@ function era(year) {
 }
 ```
 
-That change will affect:
-
-- stats panel era distribution
-- data correlation matrix
-- vault era filters
-- network relation weights
-- any AI prompts that include derived era
-
-Do it as a deliberate migration, not as an incidental cleanup.
+That change will affect stats panel era distribution, data correlation matrix, vault era filters, network relation weights, and any AI prompts that include derived era. Do it as a deliberate migration, not an incidental cleanup.
 
 ## 8. Location Model
 
@@ -394,7 +401,7 @@ Same location + same agency + same era      -> 5.0, edge emitted
 Same location + same agency + same era/type -> 5.5, edge emitted
 ```
 
-The `type` stored on the edge is the first relation category that contributed to the edge, with location taking priority. It is a label, not a full explanation of every contributing factor.
+The `type` stored on the edge is the first relation category that contributed, with location taking priority. It is a label, not a full explanation of every contributing factor.
 
 ## 13. Community Utility
 
@@ -408,7 +415,89 @@ byEra[era]           -> [doc ids]
 
 Use it for categorical grouping. Do not describe it as inferred community detection unless the implementation changes.
 
-## 14. Section Behavior
+## 14. Decode Handoff — decodeStore Pattern
+
+All `DECODE WITH AI` / `DECODE →` buttons across every section route through `src/data/decodeStore.js`. This module avoids prop drilling and sessionStorage workarounds by using a module-level handler registration.
+
+### Module Exports
+
+```js
+startDecode(doc)        // Called by any section button
+setDecodeHandler(fn)    // Called by AIDecoder on mount
+consumeDecode()         // Called by AIDecoder on mount to handle pre-mount clicks
+```
+
+### Flow When AIDecoder Is Already Mounted
+
+```text
+User clicks DECODE WITH AI
+  -> startDecode(doc) called
+  -> fetch("/api/analyze") fires immediately
+  -> window.dispatchEvent("kala:decode-start")   <- toast fires
+  -> _handler(doc, promise) called directly
+  -> AIDecoder receives doc + promise, sets loading state
+  -> analysis result renders when fetch resolves
+```
+
+### Flow When AIDecoder Is Not Yet Mounted
+
+```text
+User clicks DECODE WITH AI
+  -> startDecode(doc) called
+  -> fetch fires immediately
+  -> kala:decode-start event dispatched            <- toast fires
+  -> decodeStore.doc = doc, decodeStore.promise = promise  (stashed)
+  -> scroll animation plays
+  -> AIDecoder mounts
+  -> useEffect calls consumeDecode()
+  -> applyDecode(doc, promise) called
+  -> analysis result renders when fetch resolves
+```
+
+### Handler Registration in AIDecoder
+
+```js
+useEffect(() => {
+  function applyDecode(doc, promise) {
+    setSelectedDoc(doc)
+    setFile(null)
+    setFileType("metadata")
+    setLoading(true)
+    setLoadingMsg("Analyzing with KALA AI...")
+    setResult(null)
+    setError(null)
+    promise
+      .then(data => { if (data.error) throw new Error(data.error); setResult(data) })
+      .catch(e => setError(e.message))
+      .finally(() => { setLoading(false); setLoadingMsg("") })
+  }
+
+  const { doc, promise } = consumeDecode()
+  if (doc && promise) applyDecode(doc, promise)
+
+  setDecodeHandler(applyDecode)
+  return () => setDecodeHandler(null)
+}, [])
+```
+
+Only one handler can be registered at a time. `setDecodeHandler(null)` on unmount prevents stale closures.
+
+### Components That Call startDecode
+
+| Component | What doc is passed |
+| --- | --- |
+| `DocumentVault.jsx` | Selected document from modal |
+| `BirthDatePortal.jsx` | Selected document from resonance match |
+| `GlobeView.jsx` | `selected.docs[0]` — first document from selected location group |
+| `NetworkGraph.jsx` | `selected` — currently focused network node document |
+
+### DecodeToast
+
+`DecodeToast` is a component in `App.jsx`. It listens for `kala:decode-start` DOM events and renders a fixed top-center toast showing the document title, a spinning indicator, and animated bar equalizer. It auto-dismisses after 3 seconds.
+
+This gives visible feedback during the scroll animation between the triggering section and the decoder section.
+
+## 15. Section Behavior
 
 ### Entry Loader
 
@@ -437,34 +526,11 @@ Rules:
 
 `GlobalSpaceship.jsx` is historically named but should only be mounted inside `HeroSection`.
 
-The intended behavior is forward/receding motion with subtle drift. The product decision is that the spaceship belongs to the first viewport, not every section.
-
-Core motion logic uses:
-
-```text
-scroll progress
-time drift
-smootherstep depth easing
-pointer nudge
-z-depth interpolation
-scale interpolation
-pitch, yaw, and bank interpolation
-```
-
-The important perceived effect is depth, not lateral sliding.
+Core motion logic uses scroll progress, time drift, smootherstep depth easing, pointer nudge, z-depth interpolation, scale interpolation, pitch, yaw, and bank interpolation. The important perceived effect is depth, not lateral sliding.
 
 ### Stats Panel
 
-`StatsPanel.jsx` derives counts from `DOCUMENTS` and `STATS`. It shows:
-
-- total files
-- document count
-- video count
-- year span
-- agency bars
-- era distribution
-- top locations
-- redaction notice
+`StatsPanel.jsx` derives counts from `DOCUMENTS` and `STATS`. It shows total files, document count, video count, year span, agency bars, era distribution, top locations, and redaction notice.
 
 If counts look wrong, inspect `manifest.js` first.
 
@@ -479,6 +545,7 @@ Implementation details:
 - Excludes `Unknown` and `Space`.
 - Defaults selected zone to the largest available group.
 - Uses `flyTo` for marker focus and reset.
+- `DECODE WITH AI` passes `selected.docs[0]` to `startDecode`.
 
 ### Network Graph
 
@@ -492,6 +559,7 @@ Important details:
 - Nodes can be dragged.
 - The selected node panel shows document metadata and related docs.
 - Edge hover shows source, target, relation label, and weight.
+- `DECODE →` passes the currently selected document to `startDecode`.
 
 The `relationMode` state currently changes button styling only. It does not filter edges. If relation mode should become functional, filter `relations` or `filteredLinks` by selected mode.
 
@@ -516,15 +584,9 @@ These are descriptive charts. Avoid copy that implies causal findings.
 - era filter
 - paginated cards
 - document detail modal
-- handoff to decoder
+- handoff to decoder via `startDecode`
 
-The modal displays an expected local file path derived from:
-
-```js
-const FILE_ROOT = "C:/Users/HP OMEN/KALA/data/Release_1/Release_1/"
-```
-
-That path is environment-specific. If this project must run on other machines, replace it with a configurable or relative display strategy.
+The `DECODE WITH AI` button in the modal calls `startDecode(doc)` and scrolls to `#decoder`. The API call is already in flight before the scroll animation ends.
 
 ### Video Archive
 
@@ -559,14 +621,24 @@ The decoder shows:
 - structured analysis output
 - collection-level metadata question box
 
-The selected document handoff uses:
+The selected document handoff uses `decodeStore`. See section 14 for the full flow. The decoder does not read `sessionStorage`.
 
-```js
-sessionStorage.setItem("kala-decode-doc", JSON.stringify(doc))
-document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
-```
+### Birth Date Resonance Portal
 
-## 15. KALA AI API Contract
+`BirthDatePortal.jsx` maps a user-supplied birth date to UAP encounter data.
+
+Features:
+
+- Date wheel input (month + day)
+- Zodiac sign derivation and archetype profile
+- `getSightingsByDate` matches sightings near the selected date by calendar proximity
+- Sighting cards with category, credibility, expandable description
+- Related document modal with direct `DECODE WITH AI` handoff via `startDecode`
+- `AI DECODER →` scroll button for direct section navigation
+
+Sighting data lives in `src/data/sightings.js`. Zodiac boundaries are computed in `getZodiac`. Category definitions and credibility color scales are exported from the same module.
+
+## 16. KALA AI API Contract
 
 The visible product name is KALA AI. Keep provider implementation details out of user-facing UI.
 
@@ -666,7 +738,7 @@ Use this route for questions like:
 - Which agencies dominate this subset?
 - What patterns appear across this filtered group?
 
-## 16. Local Development Notes
+## 17. Local Development Notes
 
 Install dependencies:
 
@@ -713,7 +785,7 @@ Environment variable required for AI routes:
 ANTHROPIC_API_KEY=your_api_key_here
 ```
 
-## 17. Build And Chunking
+## 18. Build And Chunking
 
 `vite.config.js` defines manual chunks:
 
@@ -727,7 +799,7 @@ leaflet
 
 Three.js is the largest visual dependency. Keep full-scene Three.js usage intentional. The current design has one global starfield and one hero-only spaceship.
 
-## 18. Styling And UX Rules
+## 19. Styling And UX Rules
 
 Follow these rules to preserve the app's character and usability:
 
@@ -742,7 +814,7 @@ Follow these rules to preserve the app's character and usability:
 - Respect reduced-motion expectations when adding new animation.
 - Avoid implying that AI output is source truth.
 
-## 19. Adding New Documents
+## 20. Adding New Documents
 
 Checklist:
 
@@ -760,9 +832,9 @@ Checklist:
 12. Run `npm run build`.
 13. Manually inspect stats, vault filters, relation graph, and map grouping.
 
-Avoid runtime randomness in new metadata. Counts and builds are easier to reason about when records are stable.
+Avoid runtime randomness in new metadata.
 
-## 20. Adding New Videos
+## 21. Adding New Videos
 
 Checklist:
 
@@ -774,7 +846,7 @@ Checklist:
 6. Confirm fallback search behavior for missing ids.
 7. Run `npm run build`.
 
-## 21. Known Risks And Maintenance Debt
+## 22. Known Risks And Maintenance Debt
 
 Known issues:
 
@@ -784,7 +856,6 @@ Known issues:
 - PDF uploads do not perform true PDF text extraction.
 - AI JSON parsing is regex-based.
 - `relationMode` in the network UI is visual state only.
-- The document vault file root is machine-specific.
 - Vite dev proxy expects a separate API server on port 3001.
 - Manifest video `dvidshubId` and `VideoArchive.jsx` embed ids can drift if only one is updated.
 
@@ -794,11 +865,10 @@ Recommended cleanup order:
 2. Replace random sizes with fixed byte values.
 3. Add real PDF text extraction.
 4. Make network relation mode filter edges.
-5. Move environment-specific file root to configuration.
-6. Replace regex JSON parsing with a stricter structured output strategy.
-7. Normalize encoding artifacts carefully with targeted edits.
+5. Replace regex JSON parsing with a stricter structured output strategy.
+6. Normalize encoding artifacts carefully with targeted edits.
 
-## 22. Verification Checklist
+## 23. Verification Checklist
 
 Run:
 
@@ -813,19 +883,26 @@ Boot loader appears and exits.
 Hero renders.
 Spaceship appears only in the hero section.
 Global stars remain behind content.
-Navigation scrolls to all section ids.
+Navigation scrolls to all section ids including birthdate.
 Stats counts match manifest expectations.
 Map markers render and selected zones focus correctly.
+Map DECODE WITH AI sends first doc from zone to KALA AI and shows toast.
 Network graph renders, drags, zooms, and shows selected nodes.
+Network DECODE → sends selected node doc to KALA AI and shows toast.
 Correlation charts render without label overlap.
 Vault search, agency filter, era filter, pagination, and modal work.
-Vault handoff scrolls to the decoder and selects the document.
+Vault DECODE WITH AI fires analysis immediately and shows toast.
 Video tiles open modals and DVIDS links behave correctly.
+Birth date input renders zodiac profile and sighting cards.
+Resonance portal DECODE WITH AI sends matched doc to KALA AI and shows toast.
+DecodeToast appears at top of page when any decode button is clicked.
+DecodeToast auto-dismisses after ~3 seconds.
+AIDecoder result renders without manual re-selection after any decode button.
 KALA AI labels do not expose provider names in visible UI.
 API routes return useful errors when the API key is missing.
 API routes work when the API key and compatible backend are present.
 ```
 
-## 23. Project Philosophy In One Sentence
+## 24. Project Philosophy In One Sentence
 
 KALA is a research instrument wrapped in cinematic atmosphere: the atmosphere invites exploration, but the data model, relation weights, confidence scoring, and source metadata keep the work grounded.
