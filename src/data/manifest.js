@@ -1,3 +1,10 @@
+const WAR_GOV = "https://www.war.gov/medialink/ufo/release_1/"
+
+export function warGovThumb(filename) {
+  const name = filename.toLowerCase().replace(/\s+/g, "-").replace(/\.(pdf|png|jpe?g)$/i, ".jpg")
+  return WAR_GOV + "thumbnail/" + name
+}
+
 export const AGENCIES = {
   DOW:   { label: "Dept. of War",     color: "#00d4ff", bg: "rgba(0,212,255,0.12)",   icon: "⚔" },
   FBI:   { label: "FBI",              color: "#ff4444", bg: "rgba(255,68,68,0.12)",   icon: "🔍" },

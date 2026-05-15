@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { DOCUMENTS, AGENCIES, TYPES } from "../data/manifest"
+import { DOCUMENTS, AGENCIES, TYPES, warGovThumb } from "../data/manifest"
 
-const DATA_ROOT = "/data/"
+const DATA_ROOT = import.meta.env.VITE_DATA_ROOT || "/data/"
 
 function DocCard({ doc, onClick }) {
   const agency = AGENCIES[doc.agency] || { color:"#fff", label: doc.agency, icon:"?" }
@@ -10,8 +10,8 @@ function DocCard({ doc, onClick }) {
   const sizeKB = (doc.size / 1024).toFixed(0)
   const sizeMB = (doc.size / 1024 / 1024).toFixed(1)
 
-  const isImage = doc.filename.match(/\.(png|jpe?g)$/i)
   const dataUrl = `${DATA_ROOT}${encodeURIComponent(doc.filename)}`
+  const thumbUrl = warGovThumb(doc.filename)
 
   return (
     <motion.div
@@ -23,17 +23,18 @@ function DocCard({ doc, onClick }) {
       className="glass rounded-xl overflow-hidden cursor-pointer border border-white/5 hover:border-white/10 transition-all group"
       style={{ "--agency-color": agency.color }}
     >
-      {/* Image thumbnail for photo types */}
-      {isImage && (
-        <div className="h-28 overflow-hidden bg-black/30">
-          <img
-            src={dataUrl}
-            alt={doc.title}
-            loading="lazy"
-            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-          />
+      {/* war.gov thumbnail for all docs */}
+      <div className="h-28 overflow-hidden bg-black/30 relative">
+        <img
+          src={thumbUrl}
+          alt={doc.title}
+          loading="lazy"
+          onError={e => { e.currentTarget.style.display = "none" }}
+          className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+        />
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-0">
         </div>
-      )}
+      </div>
 
       <div className="p-3 md:p-4">
         {/* Top row */}
@@ -140,17 +141,16 @@ function DocModal({ doc, onClose, onDecode }) {
           ))}
         </div>
 
-        {/* Image preview for photo types */}
-        {(doc.type === "photo" || doc.type === "photo-series") && doc.filename.match(/\.(png|jpe?g)$/i) && (
-          <div className="glass rounded-lg overflow-hidden mb-4">
-            <img
-              src={`${DATA_ROOT}${encodeURIComponent(doc.filename)}`}
-              alt={doc.title}
-              loading="lazy"
-              className="w-full h-40 object-cover opacity-80 hover:opacity-100 transition-opacity"
-            />
-          </div>
-        )}
+        {/* war.gov cover thumbnail */}
+        <div className="glass rounded-lg overflow-hidden mb-4">
+          <img
+            src={warGovThumb(doc.filename)}
+            alt={doc.title}
+            loading="lazy"
+            onError={e => { e.currentTarget.parentElement.style.display = "none" }}
+            className="w-full h-40 object-cover opacity-80 hover:opacity-100 transition-opacity"
+          />
+        </div>
 
         <div className="glass rounded-lg p-3 mb-4">
           <p className="font-mono text-[0.55rem] text-slate-600 tracking-widest mb-1.5">DOCUMENT</p>
