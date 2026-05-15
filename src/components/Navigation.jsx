@@ -38,19 +38,18 @@ export default function Navigation() {
       const scrollTop = window.scrollY ?? document.documentElement.scrollTop
       setScrolled(scrollTop > 60)
 
-      // Section whose center is closest to viewport midpoint
-      const mid = scrollTop + window.innerHeight / 2
+      const activationLine = window.innerHeight * 0.38
       let bestId = NAV_ITEMS[0].id
-      let bestDist = Infinity
+      let bestTop = -Infinity
 
       for (const { id } of NAV_ITEMS) {
         const el = document.getElementById(id)
         if (!el) continue
         const rect = el.getBoundingClientRect()
-        const absTop = rect.top + scrollTop
-        const absBottom = rect.bottom + scrollTop
-        const dist = Math.abs(mid - (absTop + absBottom) / 2)
-        if (dist < bestDist) { bestDist = dist; bestId = id }
+        if (rect.top <= activationLine && rect.top > bestTop) {
+          bestTop = rect.top
+          bestId = id
+        }
       }
 
       setActive(bestId)
@@ -58,15 +57,27 @@ export default function Navigation() {
 
     let raf = null
     const onScroll = () => { if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(sync) }
+    const onResize = () => { if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(sync) }
+    const resizeObserver = new ResizeObserver(onResize)
 
     window.addEventListener("scroll", onScroll, { passive: true })
     document.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onResize, { passive: true })
+    window.addEventListener("hashchange", sync, { passive: true })
     window.addEventListener("scrollend", sync, { passive: true })
+    NAV_ITEMS.forEach(({ id }) => {
+      const el = document.getElementById(id)
+      if (el) resizeObserver.observe(el)
+    })
     sync()
 
     return () => {
+      if (raf) cancelAnimationFrame(raf)
+      resizeObserver.disconnect()
       window.removeEventListener("scroll", onScroll)
       document.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onResize)
+      window.removeEventListener("hashchange", sync)
       window.removeEventListener("scrollend", sync)
     }
   }, [])
@@ -86,23 +97,31 @@ export default function Navigation() {
             type="button"
             aria-label={`Go to ${label}`}
             onClick={() => handleNavClick(id)}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full font-mono text-xs transition-all duration-300 cursor-pointer"
+            className="group relative flex items-center gap-2 overflow-hidden px-3 py-1.5 rounded-full font-mono text-xs transition-all duration-300 cursor-pointer"
             style={
               active === id
-                ? { background: "rgba(244,181,31,0.12)", color: "#F4B51F", border: "1px solid rgba(244,181,31,0.4)" }
+                ? { color: "#F4B51F", border: "1px solid rgba(244,181,31,0.4)" }
                 : { color: "rgba(79,137,147,0.5)", border: "1px solid transparent" }
             }
             onMouseEnter={(e) => { if (active !== id) e.currentTarget.style.color = "rgba(233,243,241,0.7)" }}
             onMouseLeave={(e) => { if (active !== id) e.currentTarget.style.color = "rgba(79,137,147,0.5)" }}
           >
+            {active === id && (
+              <motion.span
+                layoutId="desktop-nav-highlight"
+                className="absolute inset-0 rounded-full"
+                style={{ background: "rgba(244,181,31,0.12)" }}
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              />
+            )}
             <span
-              className="w-1.5 h-1.5 rounded-full transition-all"
+              className="relative z-10 w-1.5 h-1.5 rounded-full transition-all"
               style={{
                 background: active === id ? "#F4B51F" : "rgba(79,137,147,0.4)",
                 boxShadow: active === id ? "0 0 6px rgba(244,181,31,0.8)" : "none",
               }}
             />
-            <span className="hidden lg:block tracking-widest text-[0.6rem]">{label}</span>
+            <span className="relative z-10 hidden lg:block tracking-widest text-[0.6rem]">{label}</span>
           </button>
         ))}
       </nav>
@@ -144,15 +163,23 @@ export default function Navigation() {
                     type="button"
                     aria-label={`Go to ${label}`}
                     onClick={() => handleNavClick(id)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-xs transition-all cursor-pointer"
+                    className="relative flex items-center gap-2 overflow-hidden px-3 py-2 rounded-lg font-mono text-xs transition-all cursor-pointer"
                     style={
                       active === id
-                        ? { background: "rgba(244,181,31,0.1)", color: "#F4B51F", border: "1px solid rgba(244,181,31,0.3)" }
+                        ? { color: "#F4B51F", border: "1px solid rgba(244,181,31,0.3)" }
                         : { color: "rgba(79,137,147,0.6)", border: "1px solid rgba(79,137,147,0.1)" }
                     }
                   >
-                    <span className="text-base">{short}</span>
-                    {label}
+                    {active === id && (
+                      <motion.span
+                        layoutId="mobile-nav-highlight"
+                        className="absolute inset-0 rounded-lg"
+                        style={{ background: "rgba(244,181,31,0.1)" }}
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    <span className="relative z-10 text-base">{short}</span>
+                    <span className="relative z-10">{label}</span>
                   </button>
                 ))}
               </div>

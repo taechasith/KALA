@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, AGENCIES, TYPES, warGovThumb } from "../data/manifest"
+import { startDecode } from "../data/decodeStore"
 
 const DATA_ROOT = import.meta.env.VITE_DATA_ROOT || "/data/"
 
@@ -214,7 +215,7 @@ export default function DocumentVault() {
   const totalPages = Math.ceil(filtered.length / PER_PAGE)
 
   const handleDecode = (doc) => {
-    sessionStorage.setItem("kala-decode-doc", JSON.stringify(doc))
+    startDecode(doc) // fires fetch immediately, before scroll animation starts
     document.getElementById("decoder")?.scrollIntoView({ behavior: "smooth" })
   }
 

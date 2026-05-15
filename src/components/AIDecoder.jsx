@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, AGENCIES } from "../data/manifest"
+import { consumeDecode } from "../data/decodeStore"
 
 const TEAL   = "#4F8993"
 const SIGNAL = "#F4B51F"
@@ -246,27 +247,22 @@ export default function AIDecoder() {
   const [question, setQuestion]       = useState("")
   const [metaResult, setMetaResult]   = useState(null)
   const [metaLoading, setMetaLoading] = useState(false)
-  const [docSearch, setDocSearch]     = useState("")
-  const [pendingAuto, setPendingAuto] = useState(false)
+  const [docSearch, setDocSearch] = useState("")
   const dropRef = useRef()
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("kala-decode-doc")
-    if (saved) {
-      setSelectedDoc(JSON.parse(saved))
-      sessionStorage.removeItem("kala-decode-doc")
-      setPendingAuto(true)
-    }
+    const { doc, promise } = consumeDecode()
+    if (!doc || !promise) return
+    setSelectedDoc(doc)
+    setLoading(true)
+    setLoadingMsg("Analyzing with KALA AI...")
+    setResult(null)
+    setError(null)
+    promise
+      .then(data => { if (data.error) throw new Error(data.error); setResult(data) })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
   }, [])
-
-  // Auto-trigger analysis once selectedDoc is set from vault
-  useEffect(() => {
-    if (pendingAuto && selectedDoc && !loading) {
-      setPendingAuto(false)
-      analyzeFile()
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAuto, selectedDoc])
 
   const handleFile = async (f) => {
     if (!f) return
