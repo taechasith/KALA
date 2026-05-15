@@ -9,9 +9,24 @@ const AGENCY_COLORS = Object.fromEntries(
 
 const RELATION_LABELS = {
   location: "shared location",
-  agency: "same agency",
-  era: "same era",
-  type: "same type",
+  agency:   "same agency",
+  era:      "same era",
+  type:     "same type",
+}
+
+function getScientificReason(rel, docA, docB) {
+  const factors = []
+  if (docA && docB) {
+    if (docA.location === docB.location && docA.location !== "Unknown")
+      factors.push(`Geographic co-location at ${docA.location} — independent corroboration of aerial phenomena from the same airspace`)
+    if (docA.agency === docB.agency)
+      factors.push(`Same reporting agency (${docA.agency}) — possible chain of custody or coordinated observation protocol`)
+    if (docA.era === docB.era && docA.era)
+      factors.push(`Concurrent temporal window (${docA.era}) — documents fall within the same classified reporting period`)
+    if (docA.type === docB.type)
+      factors.push(`Identical document classification (${docA.type}) — methodological match in data collection`)
+  }
+  return factors.length ? factors : [`Structural link · weight ${rel.weight?.toFixed(1)}`]
 }
 
 export default function NetworkGraph() {
@@ -110,11 +125,16 @@ export default function NetworkGraph() {
         d3.select(this).attr("stroke-opacity", 0.7).attr("stroke-width", d => Math.max(Math.sqrt(d.weight) * 1.2, 1.5))
         const srcId = typeof d.source === "object" ? d.source.id : d.source
         const tgtId = typeof d.target === "object" ? d.target.id : d.target
+        const docA = docMap[srcId]
+        const docB = docMap[tgtId]
+        const reasons = getScientificReason(d, docA, docB)
         setTooltip({
           x: event.offsetX,
           y: event.offsetY,
           text: `${srcId} → ${tgtId}`,
-          sub: `${RELATION_LABELS[d.type] || d.type} · weight ${d.weight.toFixed(1)}`
+          label: RELATION_LABELS[d.type] || d.type,
+          reasons,
+          weight: d.weight,
         })
       })
       .on("mouseleave", function() {
@@ -267,11 +287,20 @@ export default function NetworkGraph() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute pointer-events-none z-10 glass-heavy rounded-lg px-3 py-2 border border-white/10 max-w-[220px]"
-                  style={{ left: Math.min(tooltip.x + 12, dimensions.w - 240), top: Math.max(tooltip.y - 50, 8) }}
+                  className="absolute pointer-events-none z-10 glass-heavy rounded-lg px-3 py-2 border border-white/10 max-w-[260px]"
+                  style={{ left: Math.min(tooltip.x + 12, dimensions.w - 280), top: Math.max(tooltip.y - 60, 8) }}
                 >
-                  <p className="font-mono text-[0.65rem] text-white leading-snug">{tooltip.text}</p>
-                  <p className="font-mono text-[0.55rem] text-slate-500 mt-0.5">{tooltip.sub}</p>
+                  <p className="font-mono text-[0.65rem] text-white leading-snug mb-1">{tooltip.text}</p>
+                  <p className="font-mono text-[0.5rem] tracking-widest mb-1.5" style={{ color: "#d4a017" }}>
+                    {(tooltip.label || "").toUpperCase()} · STRENGTH {tooltip.weight?.toFixed(1)}
+                  </p>
+                  <div className="space-y-1">
+                    {(tooltip.reasons || []).map((r, i) => (
+                      <p key={i} className="font-mono text-[0.52rem] text-slate-400 leading-snug">
+                        <span className="text-cyan-600 mr-1">◈</span>{r}
+                      </p>
+                    ))}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -336,7 +365,7 @@ export default function NetworkGraph() {
                   {/* Related docs */}
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <p className="font-mono text-[0.55rem] text-slate-700 mb-2">RELATED DOCS</p>
-                    <div className="space-y-1 max-h-28 overflow-y-auto">
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
                       {relations
                         .filter(r => r.source === selected.id || r.target === selected.id)
                         .slice(0, 5)
@@ -344,16 +373,22 @@ export default function NetworkGraph() {
                           const otherId = r.source === selected.id ? r.target : r.source
                           const other = DOCUMENTS.find(d => d.id === otherId)
                           if (!other) return null
+                          const reasons = getScientificReason(r, selected, other)
                           return (
                             <button
                               key={otherId}
                               onClick={() => setSelected(other)}
-                              className="w-full text-left flex items-center gap-2 group"
+                              className="w-full text-left group space-y-0.5"
                             >
-                              <div className="w-1 h-1 rounded-full shrink-0" style={{ background: AGENCIES[other.agency]?.color || "#fff" }} />
-                              <span className="font-mono text-[0.55rem] text-slate-600 group-hover:text-slate-400 transition-colors truncate">
-                                {otherId} · {RELATION_LABELS[r.type]}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full shrink-0" style={{ background: AGENCIES[other.agency]?.color || "#fff" }} />
+                                <span className="font-mono text-[0.55rem] text-slate-400 group-hover:text-white transition-colors truncate">
+                                  {otherId}
+                                </span>
+                              </div>
+                              <p className="font-mono text-[0.48rem] text-slate-700 leading-snug pl-3 group-hover:text-slate-500 transition-colors">
+                                {reasons[0]}
+                              </p>
                             </button>
                           )
                         })}

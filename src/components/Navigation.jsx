@@ -35,19 +35,22 @@ export default function Navigation() {
 
   useEffect(() => {
     const sync = () => {
-      setScrolled(window.scrollY > 60)
+      const scrollTop = window.scrollY ?? document.documentElement.scrollTop
+      setScrolled(scrollTop > 60)
 
-      // Pick section with the most pixels visible in viewport
+      // Section whose center is closest to viewport midpoint
+      const mid = scrollTop + window.innerHeight / 2
       let bestId = NAV_ITEMS[0].id
-      let bestPx = -1
-      const vh = window.innerHeight
+      let bestDist = Infinity
 
       for (const { id } of NAV_ITEMS) {
         const el = document.getElementById(id)
         if (!el) continue
-        const { top, bottom } = el.getBoundingClientRect()
-        const px = Math.max(0, Math.min(bottom, vh) - Math.max(top, 0))
-        if (px > bestPx) { bestPx = px; bestId = id }
+        const rect = el.getBoundingClientRect()
+        const absTop = rect.top + scrollTop
+        const absBottom = rect.bottom + scrollTop
+        const dist = Math.abs(mid - (absTop + absBottom) / 2)
+        if (dist < bestDist) { bestDist = dist; bestId = id }
       }
 
       setActive(bestId)
@@ -57,16 +60,19 @@ export default function Navigation() {
     const onScroll = () => { if (raf) cancelAnimationFrame(raf); raf = requestAnimationFrame(sync) }
 
     window.addEventListener("scroll", onScroll, { passive: true })
+    document.addEventListener("scroll", onScroll, { passive: true })
     window.addEventListener("scrollend", sync, { passive: true })
     sync()
 
     return () => {
       window.removeEventListener("scroll", onScroll)
+      document.removeEventListener("scroll", onScroll)
       window.removeEventListener("scrollend", sync)
     }
   }, [])
 
   const handleNavClick = (id) => {
+    setActive(id)
     scrollToSection(id)
     setOpen(false)
   }

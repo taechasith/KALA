@@ -247,12 +247,26 @@ export default function AIDecoder() {
   const [metaResult, setMetaResult]   = useState(null)
   const [metaLoading, setMetaLoading] = useState(false)
   const [docSearch, setDocSearch]     = useState("")
+  const [pendingAuto, setPendingAuto] = useState(false)
   const dropRef = useRef()
 
   useEffect(() => {
     const saved = sessionStorage.getItem("kala-decode-doc")
-    if (saved) { setSelectedDoc(JSON.parse(saved)); sessionStorage.removeItem("kala-decode-doc") }
+    if (saved) {
+      setSelectedDoc(JSON.parse(saved))
+      sessionStorage.removeItem("kala-decode-doc")
+      setPendingAuto(true)
+    }
   }, [])
+
+  // Auto-trigger analysis once selectedDoc is set from vault
+  useEffect(() => {
+    if (pendingAuto && selectedDoc && !loading) {
+      setPendingAuto(false)
+      analyzeFile()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAuto, selectedDoc])
 
   const handleFile = async (f) => {
     if (!f) return
