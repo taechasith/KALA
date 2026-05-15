@@ -39,7 +39,30 @@ export default async function handler(req, res) {
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-  const systemPrompt = `You are KALA — a classified intelligence analysis system specializing in UAP (Unidentified Anomalous Phenomena) analysis. Analyze all inputs: documents, images, and video frames with precision and objectivity. Return structured JSON.`
+  const { DOCUMENTS, AGENCIES, TYPES } = await import("../src/data/manifest.js")
+
+  const agencyList = Object.entries(AGENCIES)
+    .map(([k, v]) => `${k}: ${v.label}`)
+    .join(" | ")
+
+  const typeList = Object.entries(TYPES)
+    .map(([k, v]) => `${k}: ${v.label}`)
+    .join(" | ")
+
+  const docCatalog = DOCUMENTS.map(d =>
+    `[${d.id}] ${d.title} | Agency: ${d.agency} | Type: ${d.type} | Year: ${d.year || "?"} | Location: ${d.location}${d.redacted ? " | REDACTED" : ""}`
+  ).join("\n")
+
+  const systemPrompt = `You are KALA — a classified intelligence analysis system specializing in UAP (Unidentified Anomalous Phenomena) analysis. Analyze all inputs: documents, images, and video frames with precision and objectivity. Return structured JSON.
+
+ARCHIVE AGENCIES: ${agencyList}
+
+DOCUMENT TYPE LABELS: ${typeList}
+
+FULL DOCUMENT CATALOG (${DOCUMENTS.length} records):
+${docCatalog}
+
+Use this catalog to cross-reference documents, identify patterns, and provide context-aware analysis when a document ID or filename is mentioned.`
 
   let messageContent
 

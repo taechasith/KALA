@@ -18,9 +18,11 @@ function serveDataPlugin() {
   return {
     name: 'serve-data-files',
     configureServer(server) {
-      server.middlewares.use('/data', (req, res, next) => {
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url || '').split('?')[0]
+        if (!url.startsWith('/data/')) return next()
         try {
-          const filename = decodeURIComponent(req.url.replace(/^\//, ''))
+          const filename = decodeURIComponent(url.slice(6))
           if (!filename) return next()
           const filepath = join(DATA_DIR, filename)
           if (!existsSync(filepath)) return next()
