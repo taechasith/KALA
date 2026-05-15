@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, AGENCIES } from "../data/manifest"
-import { consumeDecode } from "../data/decodeStore"
+import { consumeDecode, setDecodeHandler } from "../data/decodeStore"
 
 const TEAL   = "#4F8993"
 const SIGNAL = "#F4B51F"
@@ -251,17 +251,27 @@ export default function AIDecoder() {
   const dropRef = useRef()
 
   useEffect(() => {
+    function applyDecode(doc, promise) {
+      setSelectedDoc(doc)
+      setFile(null)
+      setFileType("metadata")
+      setLoading(true)
+      setLoadingMsg("Analyzing with KALA AI...")
+      setResult(null)
+      setError(null)
+      promise
+        .then(data => { if (data.error) throw new Error(data.error); setResult(data) })
+        .catch(e => setError(e.message))
+        .finally(() => { setLoading(false); setLoadingMsg("") })
+    }
+
+    // Handle decode fired before this component mounted
     const { doc, promise } = consumeDecode()
-    if (!doc || !promise) return
-    setSelectedDoc(doc)
-    setLoading(true)
-    setLoadingMsg("Analyzing with KALA AI...")
-    setResult(null)
-    setError(null)
-    promise
-      .then(data => { if (data.error) throw new Error(data.error); setResult(data) })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
+    if (doc && promise) applyDecode(doc, promise)
+
+    // Handle decode fired while component stays mounted
+    setDecodeHandler(applyDecode)
+    return () => setDecodeHandler(null)
   }, [])
 
   const handleFile = async (f) => {
