@@ -2,13 +2,16 @@ import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DOCUMENTS, AGENCIES, TYPES } from "../data/manifest"
 
-const FILE_ROOT = "C:/Users/HP OMEN/KALA/data/Release_1/Release_1/"
+const DATA_ROOT = "/data/"
 
 function DocCard({ doc, onClick }) {
   const agency = AGENCIES[doc.agency] || { color:"#fff", label: doc.agency, icon:"?" }
   const type = TYPES[doc.type] || { color:"#94a3b8", label: doc.type }
   const sizeKB = (doc.size / 1024).toFixed(0)
   const sizeMB = (doc.size / 1024 / 1024).toFixed(1)
+
+  const isImage = doc.filename.match(/\.(png|jpe?g)$/i)
+  const dataUrl = `${DATA_ROOT}${encodeURIComponent(doc.filename)}`
 
   return (
     <motion.div
@@ -17,50 +20,75 @@ function DocCard({ doc, onClick }) {
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
       onClick={() => onClick(doc)}
-      className="glass rounded-xl p-3 md:p-4 cursor-pointer border border-white/5 hover:border-white/10 transition-all group"
+      className="glass rounded-xl overflow-hidden cursor-pointer border border-white/5 hover:border-white/10 transition-all group"
       style={{ "--agency-color": agency.color }}
     >
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm shrink-0 opacity-70">{agency.icon}</span>
-          <span className="classified-stamp text-[0.5rem] px-1.5 py-0.5 whitespace-nowrap"
-            style={{ color: agency.color, borderColor: agency.color + "50" }}>
-            {agency.label}
+      {/* Image thumbnail for photo types */}
+      {isImage && (
+        <div className="h-28 overflow-hidden bg-black/30">
+          <img
+            src={dataUrl}
+            alt={doc.title}
+            loading="lazy"
+            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+          />
+        </div>
+      )}
+
+      <div className="p-3 md:p-4">
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm shrink-0 opacity-70">{agency.icon}</span>
+            <span className="classified-stamp text-[0.5rem] px-1.5 py-0.5 whitespace-nowrap"
+              style={{ color: agency.color, borderColor: agency.color + "50" }}>
+              {agency.label}
+            </span>
+          </div>
+          {doc.redacted && (
+            <span className="classified-stamp agency-FBI text-[0.5rem] px-1.5 py-0.5 shrink-0">REDACTED</span>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className="font-mono text-xs text-white font-medium mb-2 leading-snug line-clamp-2 group-hover:text-cyan-100 transition-colors">
+          {doc.title}
+        </h3>
+
+        {/* Meta row */}
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[0.55rem] font-mono text-slate-600 mb-2">
+          <span className="flex items-center gap-1">
+            <span>◷</span> {doc.year || "DATE UNK"}
+          </span>
+          <span className="flex items-center gap-1">
+            <span>◎</span> {doc.location}
+          </span>
+          <span className="flex items-center gap-1">
+            <span>◈</span> {doc.era || "—"}
           </span>
         </div>
-        {doc.redacted && (
-          <span className="classified-stamp agency-FBI text-[0.5rem] px-1.5 py-0.5 shrink-0">REDACTED</span>
-        )}
-      </div>
 
-      {/* Title */}
-      <h3 className="font-mono text-xs text-white font-medium mb-2 leading-snug line-clamp-2 group-hover:text-cyan-100 transition-colors">
-        {doc.title}
-      </h3>
-
-      {/* Meta row */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[0.55rem] font-mono text-slate-600">
-        <span className="flex items-center gap-1">
-          <span>◷</span> {doc.year || "DATE UNK"}
-        </span>
-        <span className="flex items-center gap-1">
-          <span>◎</span> {doc.location}
-        </span>
-        <span className="flex items-center gap-1">
-          <span>◈</span> {doc.era || "—"}
-        </span>
-      </div>
-
-      {/* Bottom: type badge + size */}
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
-        <span className="font-mono text-[0.5rem] px-1.5 py-0.5 rounded"
-          style={{ color: type.color, background: type.color + "15" }}>
-          {type.label}
-        </span>
-        <span className="font-mono text-[0.55rem] text-slate-700">
-          {doc.size > 1024*1024 ? `${sizeMB} MB` : `${sizeKB} KB`}
-        </span>
+        {/* Bottom: type badge + size + view link */}
+        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+          <span className="font-mono text-[0.5rem] px-1.5 py-0.5 rounded"
+            style={{ color: type.color, background: type.color + "15" }}>
+            {type.label}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[0.55rem] text-slate-700">
+              {doc.size > 1024*1024 ? `${sizeMB} MB` : `${sizeKB} KB`}
+            </span>
+            <a
+              href={dataUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="font-mono text-[0.5rem] px-1.5 py-0.5 rounded border border-cyan-500/20 text-cyan-600 hover:text-cyan-400 hover:border-cyan-500/40 transition-all"
+            >
+              VIEW ↗
+            </a>
+          </div>
+        </div>
       </div>
     </motion.div>
   )
@@ -112,15 +140,35 @@ function DocModal({ doc, onClose, onDecode }) {
           ))}
         </div>
 
+        {/* Image preview for photo types */}
+        {(doc.type === "photo" || doc.type === "photo-series") && doc.filename.match(/\.(png|jpe?g)$/i) && (
+          <div className="glass rounded-lg overflow-hidden mb-4">
+            <img
+              src={`${DATA_ROOT}${encodeURIComponent(doc.filename)}`}
+              alt={doc.title}
+              loading="lazy"
+              className="w-full h-40 object-cover opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+        )}
+
         <div className="glass rounded-lg p-3 mb-4">
-          <p className="font-mono text-[0.55rem] text-slate-600 tracking-widest mb-1.5">FILE PATH</p>
-          <p className="font-mono text-[0.6rem] text-slate-500 break-all leading-relaxed">{FILE_ROOT}{doc.filename}</p>
+          <p className="font-mono text-[0.55rem] text-slate-600 tracking-widest mb-1.5">DOCUMENT</p>
+          <p className="font-mono text-[0.6rem] text-slate-500 break-all leading-relaxed">{doc.filename}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
+          <a
+            href={`${DATA_ROOT}${encodeURIComponent(doc.filename)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 py-2.5 rounded-xl font-mono text-sm border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/15 transition-all text-center"
+          >
+            VIEW DOCUMENT ↗
+          </a>
           <button
             onClick={() => { onDecode(doc); onClose() }}
-            className="flex-1 py-2.5 rounded-xl font-mono text-sm border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/15 transition-all"
+            className="flex-1 py-2.5 rounded-xl font-mono text-sm border border-purple-500/40 text-purple-400 hover:bg-purple-500/15 transition-all"
           >
             DECODE WITH AI →
           </button>
@@ -128,7 +176,7 @@ function DocModal({ doc, onClose, onDecode }) {
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl font-mono text-sm border border-white/10 text-slate-500 hover:text-slate-300 transition-all"
           >
-            CLOSE
+            ✕
           </button>
         </div>
       </motion.div>
